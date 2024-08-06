@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
 
@@ -22,6 +22,9 @@ def index():
             if request.form['password'] == 'hantar':
                 inputted_names.clear()
                 return redirect(url_for('index'))
+        else: 
+            flash('The name is not in the name list', 'error')
+
 
     remaining_names = all_names - inputted_names
     remaining_count = len(remaining_names)
