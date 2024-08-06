@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
@@ -23,6 +23,15 @@ inputted_names = {name: 'בהפסקה' for name in all_names}
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/reset', methods=['POST'])
+def reset():
+    password = request.form.get('password')
+    if password == 'your_secret_key_here':
+        handle_reset_names()
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False})
 
 @socketio.on('reset_names')
 def handle_reset_names():

@@ -76,7 +76,7 @@
             <input type="text" id="reasonInput" class="form-control mb-2" placeholder="הכנס סיבה" style="display:none;">
             <div class="d-grid gap-2 d-md-flex justify-content-md-start">
                 <button onclick="addName()" class="btn btn-primary me-2">ערוך סטטוס</button>
-                <button onclick="resetNames()" class="btn btn-danger me-2">אפס רשימה</button>
+                <button onclick="resetNamesPrompt()" class="btn btn-danger me-2">אפס רשימה</button>
                 <button onclick="showTables()" class="btn btn-success">הצג חסרים</button>
             </div>
         </div>
@@ -103,7 +103,7 @@
                 source: allNames
             });
             socket.emit('reset_names');  // Emit reset_names event when page loads
-        
+
             $('#statusInput').change(function() {
                 if ($(this).val() === 'אחר') {
                     $('#reasonInput').show();
@@ -112,25 +112,27 @@
                 }
             });
         });
-        
+
         socket.on('initial_data', (data) => {
             updateList(data.names);
             document.getElementById('removedCount').textContent = data.removed_names;
         });
-        
+
         socket.on('update_data', (data) => {
             updateList(data.names);
             document.getElementById('removedCount').textContent = data.removed_names;
         });
-        
+
         socket.on('name_not_found', () => {
             alert('השם לא נמצא ברשימה.');
         });
-        
+
         function updateList(names) {
             const nameList = document.getElementById('nameList');
             nameList.innerHTML = '';
+            const presentNames = Object.entries(names).filter(([name, status]) => status === 'נוכח');
             const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));  // Sort by name
+
             for (const [name, status] of sortedNames) {
                 const li = document.createElement('li');
                 li.textContent = `${name} - ${status}`;
@@ -138,9 +140,10 @@
                 li.classList.add('list-group-item');
                 nameList.appendChild(li);
             }
-            document.getElementById('inListCount').textContent = sortedNames.length;
+
+            document.getElementById('inListCount').textContent = presentNames.length;
         }
-        
+
         function removeName() {
             const nameInput = document.getElementById('nameInput').value.trim();
             if (nameInput === '') {
@@ -150,7 +153,7 @@
             socket.emit('remove_name', { name: nameInput });
             document.getElementById('nameInput').value = '';
         }
-        
+
         function addName() {
             const nameInput = document.getElementById('nameInput').value.trim();
             const statusInput = document.getElementById('statusInput').value;
@@ -173,11 +176,19 @@
             document.getElementById('statusInput').value = 'נוכח';
             document.getElementById('reasonInput').style.display = 'none';
         }
-        
-        function resetNames() {
-            socket.emit('reset_names');
+
+        function resetNamesPrompt() {
+            const password = prompt('הכנס סיסמה:');
+            if (password) {
+                $.post('/reset', { password: password }, (response) => {
+                    if (response.success) {
+                        socket.emit('reset_names');
+                    } else {
+                        alert('סיסמה שגויה.');
+                    }
+                });
+            }
         }
-        
 
         function showTables() {
             const tablesContainer = document.getElementById('tablesContainer');
@@ -190,12 +201,16 @@
             const nameListItems = document.querySelectorAll('#nameList li');
             nameListItems.forEach(item => {
                 const [name, status] = item.textContent.split(' - ');
-                const mainStatus = status.split(' - ')[0];  // Get the main status part
+                const [mainStatus, reason] = status.split(' - ');  // Get the main status and reason
                 if (mainStatus !== 'נוכח') {
                     if (!statuses[mainStatus]) {
                         statuses[mainStatus] = [];
                     }
-                    statuses[mainStatus].push(status !== 'אחר' ? name : `${name} - ${status.split(' - ')[1]}`);  // Include reason for 'אחר'
+                    if (mainStatus === 'אחר' && reason) {
+                        statuses[mainStatus].push(`${name} - ${mainStatus} - ${reason}`);  // Include reason for 'אחר'
+                    } else {
+                        statuses[mainStatus].push(`${name} - ${mainStatus}`);
+                    }
                 }
             });
             for (const [status, names] of Object.entries(statuses)) {
@@ -221,7 +236,6 @@
                 }
             }
         }
-        
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
