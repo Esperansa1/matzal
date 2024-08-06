@@ -2,7 +2,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Hamutzi'
+app.config['SECRET_KEY'] = 'your_secret_key_here'
 socketio = SocketIO(app)
 
 # List of names to track
@@ -36,15 +36,6 @@ def handle_add_name(data):
     status = data.get('status', 'נוכח')
     if name in all_names:
         inputted_names[name] = status
-        emit('update_data', {'names': inputted_names, 'removed_names': len([n for n, s in inputted_names.items() if s != 'נוכח'])}, broadcast=True)
-    else:
-        emit('name_not_found')
-
-@socketio.on('remove_name')
-def handle_remove_name(data):
-    name = data['name']
-    if name in inputted_names:
-        inputted_names[name] = 'נוכח'
         emit('update_data', {'names': inputted_names, 'removed_names': len([n for n, s in inputted_names.items() if s != 'נוכח'])}, broadcast=True)
     else:
         emit('name_not_found')
