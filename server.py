@@ -1,9 +1,10 @@
 import json
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
+from datetime import datetime
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hamutzi'
+app.config['SECRET_KEY'] = 'hantar'
 socketio = SocketIO(app)
 
 # List of names to track
@@ -31,6 +32,14 @@ def save_data(data):
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
+
+def get_missing(data):
+    missing = {}
+    for key, value in data.items():
+        if value != 'נוכח':
+            missing[key] = value
+    return missing
+
 # Load initial data
 inputted_names = load_data()
 
@@ -39,14 +48,14 @@ def index():
     return render_template('index.html')
 
 @app.route('/matzal')
-
-
-
+def matzal():
+    missing_people = get_missing(load_data())
+    return render_template('matzal.html', data=missing_people)
 
 @app.route('/reset', methods=['POST'])
 def reset():
     password = request.form.get('password')
-    if password == 'your_secret_key_here':
+    if password == 'hantar':
         handle_reset_names()
         return jsonify({'success': True})
     else:
@@ -74,9 +83,34 @@ def handle_add_name(data):
 def handle_connect():
     emit_update_data()
 
+@socketio.on('connect')
+def handle_connect():
+    emit_update_data()
+
 def emit_update_data():
     present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
     emit('update_data', {'names': inputted_names, 'present_count': present_count, 'removed_count': len(inputted_names) - present_count}, broadcast=True)
+
+@socketio.on('request_status_card')
+def handle_request_status_card():
+    date_today = datetime.now().strftime('%Y-%m-%d')
+    current_time = datetime.now().strftime('%H:%M:%S')
+    present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
+    bathroom = [name for name, status in inputted_names.items() if status == 'שירותים']
+    break_time = [name for name, status in inputted_names.items() if status == 'בהפסקה']
+    other = [f"{name} - {status.split(' - ')[1]}" for name, status in inputted_names.items() if status.startswith('אחר')]
+
+    status_card = {
+        'date_today': date_today,
+        'current_time': current_time,
+        'course_status': {
+            'present_count': present_count,
+            'bathroom': bathroom,
+            'break_time': break_time,
+            'other': other,
+        }
+    }
+    emit('status_card', status_card)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Card</title>
+    <title>מצל סיגיט</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             background-color: #f0f0f0;
+            direction: rtl;
         }
         .card {
             background: #fff;
@@ -48,8 +50,13 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             padding: 10px;
-            margin: 10px 0;
+            margin: 20px 0;
             text-align: center;
+            width: 50%;
+        }
+        li {
+            padding: 1px;
+            list-style-type: decimal;
         }
     </style>
 </head>
@@ -58,31 +65,21 @@
         <div class="card-header" id="current-datetime">
             <!-- Current Date - Current Time will be inserted here -->
         </div>
-        <div class="card-title">CARD</div>
+        <div class="card-title">מצ"ל</div>
         <div class="row">
             <div>
-                <strong>Attending:</strong>
+                <strong>חסרים:</strong>
                 <ul>
-                    <li>Person 1</li>
-                    <li>Person 2</li>
-                </ul>
-            </div>
-            <div>
-                <strong>Missing:</strong>
-                <ul>
-                    <li>Person A</li>
-                    <li>Person B</li>
+                {% for person, reason in data.items() %}
+                    <li>{{person}} - {{reason}}</li>
+                {% endfor %}
                 </ul>
             </div>
         </div>
-        <div class="details">
-            <strong>Details:</strong>
-            <p>Detail 1</p>
-            <p>Detail 2</p>
-        </div>
-        <div class="name-placeholder">
-            Placeholder for a Name
-        </div>
+        <input class="name-placeholder">
+            
+        </input>
+
     </div>
 
     <script>
