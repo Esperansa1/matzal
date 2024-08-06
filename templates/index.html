@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רשימת כיתה</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            direction: rtl;
+        }
+        .name-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .name-list li {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .נוכח {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .שירותים {
+            background: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .בהפסקה {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        .אחר {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .status-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            direction: rtl;
+            text-align: right;
+        }
+        .status-table th, .status-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .status-table th {
+            background: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">רשימת כיתה</h1>
+        <p>נוכחים: <span id="inListCount" class="badge bg-primary"></span></p>
+        <ul id="nameList" class="name-list mb-4"></ul>
+        <p>חסרים: <span id="removedCount" class="badge bg-danger"></span></p>
+
+        <div class="mb-3">
+            <input type="text" id="nameInput" class="form-control mb-2" placeholder="הכנס שם">
+            <select id="statusInput" class="form-select mb-2">
+                <option value="נוכח">בכיתה</option>
+                <option value="שירותים">שירותים</option>
+                <option value="בהפסקה">בהפסקה</option>
+                <option value="אחר">אחר</option>
+            </select>
+            <input type="text" id="reasonInput" class="form-control mb-2" placeholder="הכנס סיבה" style="display:none;">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <button onclick="addName()" class="btn btn-primary me-2">ערוך סטטוס</button>
+                <button onclick="resetNames()" class="btn btn-danger me-2">אפס רשימה</button>
+                <button onclick="showTables()" class="btn btn-success">הצג חסרים</button>
+            </div>
+        </div>
+
+        <div id="tablesContainer" class="mt-4"></div>
+
+    </div>
+
+    <script>
+        const socket = io();
+        const allNames = [
+            "אור אספרנסה", "עמית אביב", "אוהד אוחנה", "הראל כהן", "הילה חמוי", "אופק אביסרור", "אגם רחמים",
+            "אדם שפירא", "אוריאל טייאר", "אוריה כהן", "אלי רזומובסקי", "אסף דמתי", "ויויאן יבגנייב", "אופק ונטורה",
+            "אילה שירה טוחולוב מחלב", "תומר אלמליח", "שני ריפס", "שחר נחום", "שון איציקובסקי", "רתם אשל",
+            "רועי בלום", "רואי גולדמן", "פלג יוסיפון", "פיודור ששקוב", "עידן מרסיאנו", "עידן גלר",
+            "עידו וינץ יחזקאל", "עומרי בינימיני", "עומר כסלו", "סהר צמח", "נתנאל עיליי שם טוב", "ניק קריימרמן",
+            "לירון לוי", "ליהיא מלול", "יעל דינר", "יונתן דגן", "זואי פרידמן", "זהר שפר", "הראל לוי",
+            "דניאל ליוש", "דביר עזר", "גל גרייצר", "גיא גרזון", "גיא אלבז", "אלמוג גרנות", "אליה אוסדון",
+            "איתן צ'רטוף", "הוד ניסן", "תומר חאיק"
+        ];
+
+        $(function() {
+            $("#nameInput").autocomplete({
+                source: allNames
+            });
+            socket.emit('reset_names');  // Emit reset_names event when page loads
+        
+            $('#statusInput').change(function() {
+                if ($(this).val() === 'אחר') {
+                    $('#reasonInput').show();
+                } else {
+                    $('#reasonInput').hide();
+                }
+            });
+        });
+        
+        socket.on('initial_data', (data) => {
+            updateList(data.names);
+            document.getElementById('removedCount').textContent = data.removed_names;
+        });
+        
+        socket.on('update_data', (data) => {
+            updateList(data.names);
+            document.getElementById('removedCount').textContent = data.removed_names;
+        });
+        
+        socket.on('name_not_found', () => {
+            alert('השם לא נמצא ברשימה.');
+        });
+        
+        function updateList(names) {
+            const nameList = document.getElementById('nameList');
+            nameList.innerHTML = '';
+            const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));  // Sort by name
+            for (const [name, status] of sortedNames) {
+                const li = document.createElement('li');
+                li.textContent = `${name} - ${status}`;
+                li.classList.add(status.split(' - ')[0].toLowerCase().replace(' ', '-'));  // Split the status to get the main status part
+                li.classList.add('list-group-item');
+                nameList.appendChild(li);
+            }
+            document.getElementById('inListCount').textContent = sortedNames.length;
+        }
+        
+        function removeName() {
+            const nameInput = document.getElementById('nameInput').value.trim();
+            if (nameInput === '') {
+                alert('הכנס שם בבקשה.');
+                return;
+            }
+            socket.emit('remove_name', { name: nameInput });
+            document.getElementById('nameInput').value = '';
+        }
+        
+        function addName() {
+            const nameInput = document.getElementById('nameInput').value.trim();
+            const statusInput = document.getElementById('statusInput').value;
+            let reason = '';
+            if (statusInput === 'אחר') {
+                reason = document.getElementById('reasonInput').value.trim();
+                if (reason === '') {
+                    alert('הכנס סיבה בבקשה.');
+                    return;
+                }
+            }
+            const status = reason ? `${statusInput} - ${reason}` : statusInput;
+            if (nameInput === '') {
+                alert('הכנס שם בבקשה.');
+                return;
+            }
+            socket.emit('add_name', { name: nameInput, status: status });
+            document.getElementById('nameInput').value = '';
+            document.getElementById('reasonInput').value = '';
+            document.getElementById('statusInput').value = 'נוכח';
+            document.getElementById('reasonInput').style.display = 'none';
+        }
+        
+        function resetNames() {
+            socket.emit('reset_names');
+        }
+        
+
+        function showTables() {
+            const tablesContainer = document.getElementById('tablesContainer');
+            tablesContainer.innerHTML = '';
+            const statuses = {
+                'שירותים': [],
+                'בהפסקה': [],
+                'אחר': []
+            };
+            const nameListItems = document.querySelectorAll('#nameList li');
+            nameListItems.forEach(item => {
+                const [name, status] = item.textContent.split(' - ');
+                const mainStatus = status.split(' - ')[0];  // Get the main status part
+                if (mainStatus !== 'נוכח') {
+                    if (!statuses[mainStatus]) {
+                        statuses[mainStatus] = [];
+                    }
+                    statuses[mainStatus].push(status !== 'אחר' ? name : `${name} - ${status.split(' - ')[1]}`);  // Include reason for 'אחר'
+                }
+            });
+            for (const [status, names] of Object.entries(statuses)) {
+                if (names.length > 0) {
+                    const table = document.createElement('table');
+                    table.classList.add('table', 'table-striped', 'status-table');
+                    const thead = document.createElement('thead');
+                    const tbody = document.createElement('tbody');
+                    const th = document.createElement('th');
+                    th.textContent = `${status} (${names.length})`;
+                    th.setAttribute('colspan', '2');
+                    thead.appendChild(th);
+                    names.forEach(name => {
+                        const tr = document.createElement('tr');
+                        const td = document.createElement('td');
+                        td.textContent = name;
+                        tr.appendChild(td);
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(thead);
+                    table.appendChild(tbody);
+                    tablesContainer.appendChild(table);
+                }
+            }
+        }
+        
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
