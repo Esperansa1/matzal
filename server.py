@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 
@@ -65,13 +66,34 @@ def handle_add_name(data):
     else:
         emit('name_not_found')
 
-@socketio.on('connect')
-def handle_connect():
+@socketio.on('request_initial_data')
+def handle_request_initial_data():
     emit_update_data()
+
+@socketio.on('request_status_card')
+def handle_request_status_card():
+    date_today = datetime.now().strftime('%Y-%m-%d')
+    current_time = datetime.now().strftime('%H:%M:%S')
+    present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
+    bathroom = [name for name, status in inputted_names.items() if status == 'שירותים']
+    break_time = [name for name, status in inputted_names.items() if status == 'בהפסקה']
+    other = [f"{name} - {status.split(' - ')[1]}" for name, status in inputted_names.items() if status.startswith('אחר')]
+
+    status_card = {
+        'date_today': date_today,
+        'current_time': current_time,
+        'course_status': {
+            'present_count': present_count,
+            'bathroom': bathroom,
+            'break_time': break_time,
+            'other': other,
+        }
+    }
+    emit('status_card', status_card)
 
 def emit_update_data():
     present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
-    emit('update_data', {'names': inputted_names, 'present_count': present_count, 'removed_count': len(inputted_names) - present_count}, broadcast=True)
+    socketio.emit('update_data', {'names': inputted_names, 'present_count': present_count, 'removed_count': len(inputted_names) - present_count})
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
