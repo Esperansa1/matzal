@@ -22,8 +22,6 @@ def index():
             if request.form['password'] == 'hantar':
                 inputted_names.clear()
                 return redirect(url_for('index'))
-        else: 
-            flash('The name is not in the name list', 'error')
 
 
     remaining_names = all_names - inputted_names
