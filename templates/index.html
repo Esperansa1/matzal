@@ -102,7 +102,8 @@
             $("#nameInput").autocomplete({
                 source: allNames
             });
-            socket.emit('reset_names');  // Emit reset_names event when page loads
+
+            socket.emit('request_initial_data');  // Request initial data when page loads
 
             $('#statusInput').change(function() {
                 if ($(this).val() === 'אחר') {
@@ -114,23 +115,20 @@
         });
 
         socket.on('initial_data', (data) => {
-            updateList(data.names);
-            document.getElementById('removedCount').textContent = data.removed_names;
+            updateList(data.names, data.present_count, data.removed_count);
         });
 
         socket.on('update_data', (data) => {
-            updateList(data.names);
-            document.getElementById('removedCount').textContent = data.removed_names;
+            updateList(data.names, data.present_count, data.removed_count);
         });
 
         socket.on('name_not_found', () => {
             alert('השם לא נמצא ברשימה.');
         });
 
-        function updateList(names) {
+        function updateList(names, presentCount, removedCount) {
             const nameList = document.getElementById('nameList');
             nameList.innerHTML = '';
-            const presentNames = Object.entries(names).filter(([name, status]) => status === 'נוכח');
             const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));  // Sort by name
 
             for (const [name, status] of sortedNames) {
@@ -141,7 +139,8 @@
                 nameList.appendChild(li);
             }
 
-            document.getElementById('inListCount').textContent = presentNames.length;
+            document.getElementById('inListCount').textContent = presentCount;
+            document.getElementById('removedCount').textContent = removedCount;
         }
 
         function removeName() {
