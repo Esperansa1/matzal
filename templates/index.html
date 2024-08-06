@@ -60,7 +60,8 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4">רשימת כיתה</h1>
+        <h1 class="mb-4">רשימת כיתה</h1> 
+        <a href="{{url_for('matzal')}}" >הצג מצ"ל נוכחי</a>
         <p>נוכחים: <span id="inListCount" class="badge bg-primary"></span></p>
         <ul id="nameList" class="name-list mb-4"></ul>
         <p>חסרים: <span id="removedCount" class="badge bg-danger"></span></p>
@@ -102,7 +103,8 @@
             $("#nameInput").autocomplete({
                 source: allNames
             });
-            socket.emit('reset_names');  // Emit reset_names event when page loads
+
+            socket.emit('request_initial_data');  // Request initial data when page loads
 
             $('#statusInput').change(function() {
                 if ($(this).val() === 'אחר') {
@@ -114,23 +116,20 @@
         });
 
         socket.on('initial_data', (data) => {
-            updateList(data.names);
-            document.getElementById('removedCount').textContent = data.removed_names;
+            updateList(data.names, data.present_count, data.removed_count);
         });
 
         socket.on('update_data', (data) => {
-            updateList(data.names);
-            document.getElementById('removedCount').textContent = data.removed_names;
+            updateList(data.names, data.present_count, data.removed_count);
         });
 
         socket.on('name_not_found', () => {
             alert('השם לא נמצא ברשימה.');
         });
 
-        function updateList(names) {
+        function updateList(names, presentCount, removedCount) {
             const nameList = document.getElementById('nameList');
             nameList.innerHTML = '';
-            const presentNames = Object.entries(names).filter(([name, status]) => status === 'נוכח');
             const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));  // Sort by name
 
             for (const [name, status] of sortedNames) {
@@ -176,6 +175,7 @@
             document.getElementById('reasonInput').value = '';
             document.getElementById('statusInput').value = 'נוכח';
             document.getElementById('reasonInput').style.display = 'none';
+            showTables();
         }
 
         function resetNamesPrompt() {
