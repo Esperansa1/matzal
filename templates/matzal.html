@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            padding: 20px;
+            width: 100%;
+        }
+        .card-header {
+            font-size: 14px;
+            color: #666;
+            text-align: right;
+        }
+        .card-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .row div {
+            flex: 1;
+            margin: 0 5px;
+        }
+        .details {
+            margin: 10px 0;
+        }
+        .name-placeholder {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header" id="current-datetime">
+            <!-- Current Date - Current Time will be inserted here -->
+        </div>
+        <div class="card-title">CARD</div>
+        <div class="row">
+            <div>
+                <strong>Attending:</strong>
+                <ul>
+                    <li>Person 1</li>
+                    <li>Person 2</li>
+                </ul>
+            </div>
+            <div>
+                <strong>Missing:</strong>
+                <ul>
+                    <li>Person A</li>
+                    <li>Person B</li>
+                </ul>
+            </div>
+        </div>
+        <div class="details">
+            <strong>Details:</strong>
+            <p>Detail 1</p>
+            <p>Detail 2</p>
+        </div>
+        <div class="name-placeholder">
+            Placeholder for a Name
+        </div>
+    </div>
+
+    <script>
+        const dateElement = document.getElementById('current-datetime');
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString();
+        const formattedTime = currentDate.toLocaleTimeString();
+        dateElement.textContent = `${formattedDate} - ${formattedTime}`;
+    </script>
+</body>
+</html>

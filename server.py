@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key_here'
+app.config['SECRET_KEY'] = 'hamutzi'
 socketio = SocketIO(app)
 
 # List of names to track
@@ -23,6 +23,11 @@ inputted_names = {name: 'בהפסקה' for name in all_names}
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/matzal')
+
+
+
 
 @app.route('/reset', methods=['POST'])
 def reset():
