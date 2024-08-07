@@ -84,6 +84,27 @@
 
         <div id="tablesContainer" class="mt-4"></div>
 
+        <!-- Status Card Modal -->
+        <div class="modal fade" id="statusCardModal" tabindex="-1" aria-labelledby="statusCardModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="statusCardModalLabel">מצבה קורס סיגיט</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>תאריך של היום: <span id="cardDate"></span></p>
+                        <p>שעה נוכחית: <span id="cardTime"></span></p>
+                        <p>אצן: <span id="cardPresentCount"></span></p>
+                        <p>חסרים: <span id="cardMissingCount"></span></p>
+                        <p>שירותים: <span id="cardBathroom"></span></p>
+                        <p>בהפסקה: <span id="cardBreak"></span></p>
+                        <p>אחר: <span id="cardOther"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -101,7 +122,7 @@
 
         $(function() {
             $("#nameInput").autocomplete({
-                source: allNames
+                source: debounceAutocomplete(allNames)
             });
 
             socket.emit('request_initial_data');  // Request initial data when page loads
@@ -127,6 +148,28 @@
             alert('השם לא נמצא ברשימה.');
         });
 
+        socket.on('status_card', (data) => {
+            document.getElementById('cardDate').textContent = data.date_today;
+            document.getElementById('cardTime').textContent = data.current_time;
+            document.getElementById('cardPresentCount').textContent = data.course_status.present_count;
+            document.getElementById('cardMissingCount').textContent = data.course_status.bathroom.length + data.course_status.break_time.length + data.course_status.other.length;
+            document.getElementById('cardBathroom').textContent = data.course_status.bathroom.join(', ');
+            document.getElementById('cardBreak').textContent = data.course_status.break_time.join(', ');
+            document.getElementById('cardOther').textContent = data.course_status.other.join(', ');
+            $('#statusCardModal').modal('show');
+        });
+
+        function debounceAutocomplete(names) {
+            let timeout;
+            return function(request, response) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    const results = $.ui.autocomplete.filter(names, request.term);
+                    response(results.slice(0, 10));
+                }, 300);
+            };
+        }
+
         function updateList(names, presentCount, removedCount) {
             const nameList = document.getElementById('nameList');
             nameList.innerHTML = '';
@@ -135,12 +178,9 @@
             for (const [name, status] of sortedNames) {
                 const li = document.createElement('li');
                 li.textContent = `${name} - ${status}`;
-                li.classList.add(status.split(' - ')[0].toLowerCase().replace(' ', '-'));  // Split the status to get the main status part
                 li.classList.add('list-group-item');
                 nameList.appendChild(li);
             }
-
-            document.getElementById('inListCount').textContent = presentNames.length;
             showTables();
         }
 
@@ -165,7 +205,7 @@
                     return;
                 }
             }
-            const status = reason ? `${statusInput} - ${reason}` : statusInput;
+            const status = reason !== '' ? statusInput + " - " + reason : statusInput ;
             if (nameInput === '') {
                 alert('הכנס שם בבקשה.');
                 return;
@@ -192,50 +232,59 @@
         }
 
         function showTables() {
-            const tablesContainer = document.getElementById('tablesContainer');
-            tablesContainer.innerHTML = '';
-            const statuses = {
-                'שירותים': [],
-                'בהפסקה': [],
-                'אחר': []
-            };
-            const nameListItems = document.querySelectorAll('#nameList li');
-            nameListItems.forEach(item => {
-                const [name, status] = item.textContent.split(' - ');
-                const [mainStatus, reason] = status.split(' - ');  // Get the main status and reason
-                if (mainStatus !== 'נוכח') {
-                    if (!statuses[mainStatus]) {
-                        statuses[mainStatus] = [];
-                    }
-                    if (mainStatus === 'אחר' && reason) {
-                        statuses[mainStatus].push(`${name} - ${mainStatus} - ${reason}`);  // Include reason for 'אחר'
-                    } else {
-                        statuses[mainStatus].push(`${name} - ${mainStatus}`);
-                    }
-                }
-            });
-            for (const [status, names] of Object.entries(statuses)) {
-                if (names.length > 0) {
-                    const table = document.createElement('table');
-                    table.classList.add('table', 'table-striped', 'status-table');
-                    const thead = document.createElement('thead');
-                    const tbody = document.createElement('tbody');
-                    const th = document.createElement('th');
-                    th.textContent = `${status} (${names.length})`;
-                    th.setAttribute('colspan', '2');
-                    thead.appendChild(th);
-                    names.forEach(name => {
-                        const tr = document.createElement('tr');
-                        const td = document.createElement('td');
-                        td.textContent = name;
-                        tr.appendChild(td);
-                        tbody.appendChild(tr);
-                    });
-                    table.appendChild(thead);
-                    table.appendChild(tbody);
-                    tablesContainer.appendChild(table);
-                }
+    const tablesContainer = document.getElementById('tablesContainer');
+    tablesContainer.innerHTML = '';
+    const statuses = {
+        'שירותים': [],
+        'בהפסקה': [],
+        'אחר': []
+    };
+    const nameListItems = document.querySelectorAll('#nameList li');
+
+    nameListItems.forEach(item => {
+        const [name, ...parts] = item.textContent.split(' - ');
+        const mainStatus = parts[0];
+        const reason = parts.length > 1 ? parts.slice(1).join(' - ') : '';
+
+        if (mainStatus !== 'נוכח') {
+            if (!statuses[mainStatus]) {
+                statuses[mainStatus] = [];
             }
+            if (mainStatus !== 'שירותים' && mainStatus !== 'בהפסקה')
+                statuses['אחר'].push(`${name} - ${reason}`);
+            else
+                statuses[mainStatus].push(`${name} - ${mainStatus}`);
+        }
+    });
+
+    for (const [status, names] of Object.entries(statuses)) {
+        if (names.length > 0) {
+            const table = document.createElement('table');
+            table.classList.add('table', 'table-striped', 'status-table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            const th = document.createElement('th');
+            th.textContent = `${status} (${names.length})`;
+            th.setAttribute('colspan', '2');
+            thead.appendChild(th);
+            names.forEach(name => {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.textContent = name;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            });
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            tablesContainer.appendChild(table);
+        }
+    }
+}
+
+
+
+        function showStatusCard() {
+            socket.emit('request_status_card');
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>

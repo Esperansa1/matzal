@@ -12,8 +12,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #f0f0f0;
+            background-color: #d1cece;
             direction: rtl;
+            margin-top:10px;
+
         }
         .card {
             background: #fff;
@@ -52,27 +54,45 @@
             padding: 10px;
             margin: 20px 0;
             text-align: center;
-            width: 50%;
+            width: 70%;
         }
         li {
             padding: 1px;
             list-style-type: decimal;
         }
+
+        .matzan {
+            font-size: 20px;
+        }
+
+
+
     </style>
 </head>
 <body>
     <div class="card">
-        <div class="card-header" id="current-datetime">
+        <div class="" id="current-date">
+
+        </div>
+        <div class="" id="current-datetime">
             <!-- Current Date - Current Time will be inserted here -->
         </div>
-        <div class="card-title">מצ"ל</div>
+        <div class="card-title">מצבה קורס סיגיט</div>
+        <strong class="matzan">מצן: {{status_card['course_status'].total_count}}</strong>
+        <strong class="matzan">אצן: {{status_card['course_status'].present_count}}</strong>
+        <strong class="matzan">חסרים: {{status_card['course_status'].missing_count  }}</strong>
+
         <div class="row">
             <div>
-                <strong>חסרים:</strong>
+                <strong>פירוט:</strong>
                 <ul>
-                {% for person, reason in data.items() %}
-                    <li>{{person}} - {{reason}}</li>
-                {% endfor %}
+                <h5>{{ 'שירותים: ' +', '.join(status_card.course_status['bathroom']) if status_card.course_status['bathroom'] else ''}}
+                </h5><br>
+                
+                <h5>{{ 'בהפסקה: ' +', '.join(status_card.course_status['break_time']) if status_card.course_status['break_time'] else ''}}
+                </h5><br>
+                <h5>{{ 'אחר: '+', '.join(status_card.course_status['other']) if status_card.course_status['other'] else ''}}
+                </h5>
                 </ul>
             </div>
         </div>
@@ -84,10 +104,23 @@
 
     <script>
         const dateElement = document.getElementById('current-datetime');
+        const dateFormatElement = document.getElementById('current-date');
+
         const currentDate = new Date();
-        const formattedDate = currentDate.toLocaleDateString();
-        const formattedTime = currentDate.toLocaleTimeString();
-        dateElement.textContent = `${formattedDate} - ${formattedTime}`;
+
+        var dd = String(currentDate.getDate()).padStart(2, "0");
+        var mm = String(currentDate.getMonth() + 1).padStart(2, "0"); //January is 0!
+        var yyyy = currentDate.getFullYear();
+
+        const today = mm + "/" + dd + "/" + yyyy;
+
+        const currentHours = ('0' + currentDate.getHours()).slice(-2); // Add leading zero if necessary
+        const currentMinutes = ('0' + currentDate.getMinutes()).slice(-2);
+
+        dateFormatElement.textContent = `${today}`;
+
+        dateElement.textContent = `${currentHours}:${currentMinutes}`;
+        
     </script>
 </body>
 </html>
