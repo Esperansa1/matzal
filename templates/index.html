@@ -8,38 +8,7 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            direction: rtl;
-        }
-        .name-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .name-list li {
-            padding: 8px;
-            margin: 5px 0;
-            background: #f4f4f4;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .status-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-            direction: rtl;
-            text-align: right;
-        }
-        .status-table th, .status-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-        .status-table th {
-            background: #f4f4f4;
-        }
-    </style>
+    <link href="{{ url_for('static', filename='stylesheet.css') }}" rel="stylesheet">
 </head>
 <body>
     <div class="container">

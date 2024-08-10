@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    direction: rtl;
+}
+
+.name-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.name-list li {
+    padding: 8px;
+    margin: 5px 0;
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.status-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    direction: rtl;
+    text-align: right;
+}
+
+.status-table th, .status-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.status-table th {
+    background: #f4f4f4;
+}
