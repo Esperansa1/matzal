@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,22 +24,6 @@
             background: #f4f4f4;
             border: 1px solid #ddd;
             border-radius: 4px;
-        }
-        .נוכח {
-            background: #d4edda;
-            border-color: #c3e6cb;
-        }
-        .שירותים {
-            background: #fff3cd;
-            border-color: #ffeeba;
-        }
-        .בהפסקה {
-            background: #d1ecf1;
-            border-color: #bee5eb;
-        }
-        .אחר {
-            background: #f8d7da;
-            border-color: #f5c6cb;
         }
         .status-table {
             width: 100%;
@@ -60,11 +43,15 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4">רשימת כיתה</h1> 
-        <a href="{{url_for('matzal')}}" >הצג מצ"ל נוכחי</a>
-        <p>נוכחים: <span id="inListCount" class="badge bg-primary"></span></p>
-        <ul id="nameList" class="name-list mb-4"></ul>
-        <p>חסרים: <span id="removedCount" class="badge bg-danger"></span></p>
+        <h1 class="mb-4">רשימת כיתה</h1>
+        <a href="{{ url_for('matzal') }}" class="btn btn-info mb-4">הצג מצ"ל נוכחי</a>
+        <p>נוכחים: <span id="inListCount" class="badge bg-primary">{{ present_count }}</span></p>
+        <ul id="nameList" class="name-list mb-4">
+            {% for name, status in names.items() %}
+                <li>{{ name }} - {{ status }}</li>
+            {% endfor %}
+        </ul>
+        <p>חסרים: <span id="removedCount" class="badge bg-danger">{{ removed_count }}</span></p>
 
         <div class="mb-3">
             <input type="text" id="nameInput" class="form-control mb-2" placeholder="הכנס שם">
@@ -83,50 +70,22 @@
         </div>
 
         <div id="tablesContainer" class="mt-4"></div>
-
-        <!-- Status Card Modal -->
-        <div class="modal fade" id="statusCardModal" tabindex="-1" aria-labelledby="statusCardModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="statusCardModalLabel">מצבה קורס סיגיט</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>תאריך של היום: <span id="cardDate"></span></p>
-                        <p>שעה נוכחית: <span id="cardTime"></span></p>
-                        <p>אצן: <span id="cardPresentCount"></span></p>
-                        <p>חסרים: <span id="cardMissingCount"></span></p>
-                        <p>שירותים: <span id="cardBathroom"></span></p>
-                        <p>בהפסקה: <span id="cardBreak"></span></p>
-                        <p>אחר: <span id="cardOther"></span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script>
-        const socket = io();
-        const allNames = [
-            "אור אספרנסה", "עמית אביב", "אוהד אוחנה", "הראל כהן", "הילה חמוי", "אופק אביסרור", "אגם רחמים",
-            "אדם שפירא", "אוריאל טייאר", "אוריה כהן", "אלי רזומובסקי", "אסף דמתי", "ויויאן יבגנייב", "אופק ונטורה",
-            "אילה שירה טוחולוב מחלב", "תומר אלמליח", "שני ריפס", "שחר נחום", "שון איציקובסקי", "רתם אשל",
-            "רועי בלום", "רואי גולדמן", "פלג יוסיפון", "פיודור ששקוב", "עידן מרסיאנו", "עידן גלר",
-            "עידו וינץ יחזקאל", "עומרי בינימיני", "עומר כסלו", "סהר צמח", "נתנאל עיליי שם טוב", "ניק קריימרמן",
-            "לירון לוי", "ליהיא מלול", "יעל דינר", "יונתן דגן", "זואי פרידמן", "זהר שפר", "הראל לוי",
-            "דניאל ליוש", "דביר עזר", "גל גרייצר", "גיא גרזון", "גיא אלבז", "אלמוג גרנות", "אליה אוסדון",
-            "איתן צ'רטוף", "הוד ניסן", "תומר חאיק"
-        ];
+        const allNames = {{ all_names | tojson | safe }};
+        const namesData = {{ names | tojson | safe }};
 
-        $(function() {
+        $(document).ready(function() {
+            // Autocomplete function for the name input field
             $("#nameInput").autocomplete({
-                source: debounceAutocomplete(allNames)
+                source: function(request, response) {
+                    const filteredNames = allNames.filter(name => name.startsWith(request.term));
+                    response(filteredNames.slice(0, 10));
+                }
             });
 
-            socket.emit('request_initial_data');  // Request initial data when page loads
-
+            // Show or hide the reason input field based on the selected status
             $('#statusInput').change(function() {
                 if ($(this).val() === 'אחר') {
                     $('#reasonInput').show();
@@ -134,96 +93,63 @@
                     $('#reasonInput').hide();
                 }
             });
+
+            // Initial data update when the page loads
+            updateList(namesData);
         });
 
-        socket.on('initial_data', (data) => {
-            updateList(data.names, data.present_count, data.removed_count);
-        });
+        // Function to update the list of names and their statuses
+        function updateList(names) {
+            const nameList = $('#nameList');
+            nameList.empty();
 
-        socket.on('update_data', (data) => {
-            updateList(data.names, data.present_count, data.removed_count);
-        });
+            // Sort the names alphabetically
+            const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));
 
-        socket.on('name_not_found', () => {
-            alert('השם לא נמצא ברשימה.');
-        });
-
-        socket.on('status_card', (data) => {
-            document.getElementById('cardDate').textContent = data.date_today;
-            document.getElementById('cardTime').textContent = data.current_time;
-            document.getElementById('cardPresentCount').textContent = data.course_status.present_count;
-            document.getElementById('cardMissingCount').textContent = data.course_status.bathroom.length + data.course_status.break_time.length + data.course_status.other.length;
-            document.getElementById('cardBathroom').textContent = data.course_status.bathroom.join(', ');
-            document.getElementById('cardBreak').textContent = data.course_status.break_time.join(', ');
-            document.getElementById('cardOther').textContent = data.course_status.other.join(', ');
-            $('#statusCardModal').modal('show');
-        });
-
-        function debounceAutocomplete(names) {
-            let timeout;
-            return function(request, response) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    const results = $.ui.autocomplete.filter(names, request.term);
-                    response(results.slice(0, 10));
-                }, 300);
-            };
-        }
-
-        function updateList(names, presentCount, removedCount) {
-            const nameList = document.getElementById('nameList');
-            nameList.innerHTML = '';
-            const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));  // Sort by name
-
+            // Create list items for each name and their status
             for (const [name, status] of sortedNames) {
-                const li = document.createElement('li');
-                li.textContent = `${name} - ${status}`;
-                li.classList.add('list-group-item');
-                nameList.appendChild(li);
+                const listItem = $('<li>').text(`${name} - ${status}`).addClass('list-group-item');
+                nameList.append(listItem);
             }
-            showTables();
+
+            // Update the counts of present and removed students
+            $('#inListCount').text(Object.values(names).filter(status => status === 'נוכח').length);
+            $('#removedCount').text(Object.values(names).filter(status => status !== 'נוכח').length);
         }
 
-        function removeName() {
-            const nameInput = document.getElementById('nameInput').value.trim();
-            if (nameInput === '') {
-                alert('הכנס שם בבקשה.');
-                return;
-            }
-            socket.emit('remove_name', { name: nameInput });
-            document.getElementById('nameInput').value = '';
-        }
-
+        // Function to handle adding or updating a name's status
         function addName() {
-            const nameInput = document.getElementById('nameInput').value.trim();
-            const statusInput = document.getElementById('statusInput').value;
-            let reason = '';
-            if (statusInput === 'אחר') {
-                reason = document.getElementById('reasonInput').value.trim();
-                if (reason === '') {
-                    alert('הכנס סיבה בבקשה.');
-                    return;
-                }
+            const nameInput = $('#nameInput').val().trim();
+            const statusInput = $('#statusInput').val();
+            let reasonInput = $('#reasonInput').val().trim();
+
+            if (statusInput === 'אחר' && reasonInput === '') {
+                alert('הכנס סיבה בבקשה.');
+                return;
             }
-            const status = reason !== '' ? statusInput + " - " + reason : statusInput ;
+
+            const status = reasonInput ? `${statusInput} - ${reasonInput}` : statusInput;
+
             if (nameInput === '') {
                 alert('הכנס שם בבקשה.');
                 return;
             }
-            socket.emit('add_name', { name: nameInput, status: status });
-            document.getElementById('nameInput').value = '';
-            document.getElementById('reasonInput').value = '';
-            document.getElementById('statusInput').value = 'נוכח';
-            document.getElementById('reasonInput').style.display = 'none';
-            showTables();
+
+            // Perform an AJAX POST request to update the name's status
+            $.post('/update', { name: nameInput, status: status, reason: reasonInput }, function() {
+                location.reload(); // Reload the page to reflect the updated data
+            }).fail(function(response) {
+                alert(response.responseJSON.error);
+            });
         }
 
+        // Function to handle resetting the names list
         function resetNamesPrompt() {
             const password = prompt('הכנס סיסמה:');
             if (password) {
-                $.post('/reset', { password: password }, (response) => {
+                $.post('/reset', { password: password }, function(response) {
                     if (response.success) {
-                        socket.emit('reset_names');
+                        location.reload(); // Reload the page to reflect the reset data
                     } else {
                         alert('סיסמה שגויה.');
                     }
@@ -231,60 +157,52 @@
             }
         }
 
+        // Function to show the status tables for non-present students
         function showTables() {
-    const tablesContainer = document.getElementById('tablesContainer');
-    tablesContainer.innerHTML = '';
-    const statuses = {
-        'שירותים': [],
-        'בהפסקה': [],
-        'אחר': []
-    };
-    const nameListItems = document.querySelectorAll('#nameList li');
+            const tablesContainer = $('#tablesContainer');
+            tablesContainer.empty();
 
-    nameListItems.forEach(item => {
-        const [name, ...parts] = item.textContent.split(' - ');
-        const mainStatus = parts[0];
-        const reason = parts.length > 1 ? parts.slice(1).join(' - ') : '';
+            const statuses = {
+                'שירותים': [],
+                'בהפסקה': [],
+                'אחר': []
+            };
 
-        if (mainStatus !== 'נוכח') {
-            if (!statuses[mainStatus]) {
-                statuses[mainStatus] = [];
-            }
-            if (mainStatus !== 'שירותים' && mainStatus !== 'בהפסקה')
-                statuses['אחר'].push(`${name} - ${reason}`);
-            else
-                statuses[mainStatus].push(`${name} - ${mainStatus}`);
-        }
-    });
+            $('#nameList li').each(function() {
+                const [name, ...parts] = $(this).text().split(' - ');
+                const mainStatus = parts[0];
+                const reason = parts.length > 1 ? parts.slice(1).join(' - ') : '';
 
-    for (const [status, names] of Object.entries(statuses)) {
-        if (names.length > 0) {
-            const table = document.createElement('table');
-            table.classList.add('table', 'table-striped', 'status-table');
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
-            const th = document.createElement('th');
-            th.textContent = `${status} (${names.length})`;
-            th.setAttribute('colspan', '2');
-            thead.appendChild(th);
-            names.forEach(name => {
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.textContent = name;
-                tr.appendChild(td);
-                tbody.appendChild(tr);
+                if (mainStatus !== 'נוכח') {
+                    if (!statuses[mainStatus]) {
+                        statuses[mainStatus] = [];
+                    }
+                    if (mainStatus !== 'שירותים' && mainStatus !== 'בהפסקה') {
+                        statuses['אחר'].push(`${name} - ${reason}`);
+                    } else {
+                        statuses[mainStatus].push(`${name} - ${mainStatus}`);
+                    }
+                }
             });
-            table.appendChild(thead);
-            table.appendChild(tbody);
-            tablesContainer.appendChild(table);
-        }
-    }
-}
 
-
-
-        function showStatusCard() {
-            socket.emit('request_status_card');
+            for (const [status, names] of Object.entries(statuses)) {
+                if (names.length > 0) {
+                    const table = $('<table>').addClass('table table-striped status-table');
+                    const thead = $('<thead>');
+                    const tbody = $('<tbody>');
+                    const th = $('<th>').text(`${status} (${names.length})`).attr('colspan', '2');
+                    thead.append(th);
+                    names.forEach(name => {
+                        const tr = $('<tr>');
+                        const td = $('<td>').text(name);
+                        tr.append(td);
+                        tbody.append(tr);
+                    });
+                    table.append(thead);
+                    table.append(tbody);
+                    tablesContainer.append(table);
+                }
+            }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
