@@ -1,6 +1,5 @@
 body {
     font-family: Arial, sans-serif;
-    padding: 20px;
     direction: rtl;
 }
 
@@ -31,4 +30,9 @@ body {
 
 .status-table th {
     background: #f4f4f4;
+}
+
+.brand-logo {
+    text-align: center;
+    word-spacing: 5px;
 }

@@ -11,6 +11,14 @@
     <link href="{{ url_for('static', filename='stylesheet.css') }}" rel="stylesheet">
 </head>
 <body>
+
+    <nav class="navbar navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">SIGIT MATZAL</a>
+
+
+
+    </nav>
+
     <div class="container">
         <h1 class="mb-4">רשימת כיתה</h1>
         <a href="{{ url_for('matzal') }}" class="btn btn-outline-primary mb-4">הצג מצ"ל נוכחי</a>
@@ -164,13 +172,13 @@
 
         for (const [status, names] of Object.entries(statuses)) {
             if (names.length > 0) {
-                
+
                 const row = $('<div>').text(`${status} (${names.length})`).addClass("row name-list");
+                row.append($('<hr my-2>'))
                 names.forEach(name => {
                     const name_box = $('<div>').text(name).addClass("mx-3 my-2 col-lg-2 col-md-4 col-sm-6");
-                        row.append($('<br>'))
-                        row.append(name_box);
-                    });
+                    row.append(name_box);
+                });
                 tablesContainer.append(row);
             }
         }
