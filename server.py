@@ -51,7 +51,7 @@ def update_name():
 @app.route('/reset', methods=['POST'])
 def reset_names():
     password = request.form.get('password')
-    if password == 'hantar':  # Ensure this is the correct password being checked
+    if password == 'hantar':
         global inputted_names
         inputted_names = {name: 'בהפסקה' for name in all_names}
         flash("The operation was completed successfully", 'success')
@@ -60,6 +60,24 @@ def reset_names():
         return jsonify({'success': False}), 403
 
 
+@app.route('/set_all_attending', methods=['POST'])
+def set_all_attending():
+    password = request.form.get('password')
+    if password == 'hantar':  # Ensure this is the correct password being checked
+        global inputted_names
+        inputted_names = {name: 'נוכח' for name in all_names}
+        flash("The operation was completed successfully", 'success')
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False}), 403
+
+@app.route('/api/updates')
+def get_updates():
+    return jsonify(inputted_names)
+
+@app.route('/api/matzal')
+def get_matzal_updates():
+    return jsonify(get_status_card())
 
 @app.route('/matzal')
 def matzal():
@@ -116,4 +134,4 @@ def convert_status_card_to_string(status_card):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
