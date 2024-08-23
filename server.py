@@ -1,7 +1,5 @@
-import json
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-import pyperclip
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hantar'
@@ -66,7 +64,6 @@ def reset_names():
 @app.route('/matzal')
 def matzal():
     status_card = get_status_card()
-    pyperclip.copy(convert_status_card_to_string(status_card))
     return render_template('matzal.html', status_card=status_card)
 
 
