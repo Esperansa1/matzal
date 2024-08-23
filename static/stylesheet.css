@@ -5,11 +5,10 @@ body {
 }
 
 .name-list {
-    list-style-type: none;
     padding: 0;
 }
 
-.name-list li {
+.name-list > div {
     padding: 8px;
     margin: 5px 0;
     background: #f4f4f4;

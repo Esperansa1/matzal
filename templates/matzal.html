@@ -15,6 +15,9 @@
             background-color: #d1cece;
             direction: rtl;
             margin-top: 10px;
+            background-image: url("/static/sigit-logo.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
         }
         .card {
             background: #fff;
@@ -53,11 +56,11 @@
             padding: 10px;
             margin: 20px 0;
             text-align: center;
-            width: 70%;
+            width: 80%;
         }
         li {
             padding: 1px;
-            list-style-type: disc;
+            list-style-type: square;
         }
         .matzan {
             font-size: 20px;
@@ -94,6 +97,14 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];
+        
+        const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
+        
+        document.body.style.backgroundBlendMode = randomBlendMode;
+        });
+
         const dateElement = document.getElementById('current-datetime');
         const dateFormatElement = document.getElementById('current-date');
 
