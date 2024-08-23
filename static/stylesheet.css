@@ -1,6 +1,9 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 body {
     font-family: Arial, sans-serif;
     direction: rtl;
+    font-family: "Arimo", sans-serif;
 }
 
 .name-list {
@@ -13,6 +16,8 @@ body {
     background: #f4f4f4;
     border: 1px solid #ddd;
     border-radius: 4px;
+    font-weight: 100;
+
 }
 
 .status-table {
@@ -32,7 +37,15 @@ body {
     background: #f4f4f4;
 }
 
-.brand-logo {
-    text-align: center;
-    word-spacing: 5px;
+.navbar-brand {
+    letter-spacing: 3px;
+    font-size: 2rem;
+}
+.navbar {
+    margin-bottom: 1rem;
+}
+
+footer {
+    font-weight: 700;
+
 }
