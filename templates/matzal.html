@@ -6,6 +6,8 @@
     <title>מצל סיגיט</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,7 +18,7 @@
             direction: rtl;
             margin-top: 10px;
             background-image: url("/static/sigit-logo.jpg");
-            background-position: center;
+            background-position: center 0px; 
             background-repeat: no-repeat;
         }
         .card {
@@ -26,6 +28,10 @@
             max-width: 400px;
             padding: 20px;
             width: 100%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
         .card-header {
             font-size: 14px;
@@ -72,23 +78,15 @@
         <div id="current-date"></div>
         <div id="current-datetime"></div>
         <div class="card-title">מצבה קורס סיגיט</div>
-        <strong class="matzan">מצן: {{ status_card.course_status.total_count }}</strong><br>
-        <strong class="matzan">אצן: {{ status_card.course_status.present_count }}</strong><br>
-        <strong class="matzan">חסרים: {{ status_card.course_status.missing_count }}</strong><br>
+        <strong class="matzan" id="matzal">מצל: {{ status_card.course_status.total_count }}</strong><br>
+        <strong class="matzan" id="matzan">מצן: {{ status_card.course_status.present_count }}</strong><br>
+        <strong class="matzan" id="missing">חסרים: {{ status_card.course_status.missing_count }}</strong><br>
 
         <div class="row">
             <div>
                 <strong>פירוט:</strong>
-                <ul>
-                    {% if status_card.course_status.bathroom %}
-                        <li>שירותים: {{ status_card.course_status.bathroom | join(', ') }}</li>
-                    {% endif %}
-                    {% if status_card.course_status.break_time %}
-                        <li>בהפסקה: {{ status_card.course_status.break_time | join(', ') }}</li>
-                    {% endif %}
-                    {% if status_card.course_status.other %}
-                        <li>אחר: {{ status_card.course_status.other | join(', ') }}</li>
-                    {% endif %}
+                <ul id="nameList">
+
                 </ul>
             </div>
         </div>
@@ -96,29 +94,75 @@
         <input class="name-placeholder" placeholder="שם החנטר">
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-        const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];
-        
-        const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
-        
-        document.body.style.backgroundBlendMode = randomBlendMode;
+        $(document).ready(function() {
+            // Set background blend mode
+            const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];
+            const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
+            $('body').css('background-blend-mode', randomBlendMode);
+
+            function updateList(data) {
+                const $container = $("#nameList");
+                
+                // Clear existing content
+                $container.empty();
+
+                // Create an unordered list
+                // Check if bathroom data exists and create a list item
+                if (data.course_status.bathroom && data.course_status.bathroom.length > 0) {
+                    const $li = $('<li></li>').text(`שירותים: ${data.course_status.bathroom.join(', ')}`);
+                    $container.append($li);
+                }
+
+                // Check if break_time data exists and create a list item
+                if (data.course_status.break_time && data.course_status.break_time.length > 0) {
+                    const $li = $('<li></li>').text(`בהפסקה: ${data.course_status.break_time.join(', ')}`);
+                    $container.append($li);
+                }
+
+                // Check if other data exists and create a list item
+                if (data.course_status.other && data.course_status.other.length > 0) {
+                    const $li = $('<li></li>').text(`אחר: ${data.course_status.other.join(', ')}`);
+                    $container.append($li);
+                }
+            }
+
+            function update_matzal(data) {
+                const currentDate = new Date();
+                const dd = String(currentDate.getDate()).padStart(2, "0");
+                const mm = String(currentDate.getMonth() + 1).padStart(2, "0");
+                const yyyy = currentDate.getFullYear();
+                const today = `${dd}/${mm}/${yyyy}`;
+
+                const currentHours = ('0' + currentDate.getHours()).slice(-2);
+                const currentMinutes = ('0' + currentDate.getMinutes()).slice(-2);
+
+                console.log(data.course_status.total_count);
+
+                $('#matzal').text(`מצל: ${data.course_status.total_count}`);
+                $('#matzan').text(`מצן: ${data.course_status.present_count}`);
+                $('#missing').text(`חסרים: ${data.course_status.missing_count}`);
+
+                $('#current-date').text(today);
+                $('#current-datetime').text(`${currentHours}:${currentMinutes}`);
+            }
+
+            function fetchUpdates() {
+                fetch('/api/matzal') // Endpoint that provides the updated data
+                    .then(response => response.json())
+                    .then(data => {
+                        updateList(data);
+                        update_matzal(data);
+                    })
+                    .catch(error => console.error('Error fetching updates:', error));
+            }
+
+            // Fetch updates every 10 seconds
+            fetchUpdates();
+            setInterval(fetchUpdates, 3000); 
         });
-
-        const dateElement = document.getElementById('current-datetime');
-        const dateFormatElement = document.getElementById('current-date');
-
-        const currentDate = new Date();
-        const dd = String(currentDate.getDate()).padStart(2, "0");
-        const mm = String(currentDate.getMonth() + 1).padStart(2, "0"); // January is 0!
-        const yyyy = currentDate.getFullYear();
-        const today = `${dd}/${mm}/${yyyy}`;
-
-        const currentHours = ('0' + currentDate.getHours()).slice(-2); // Add leading zero if necessary
-        const currentMinutes = ('0' + currentDate.getMinutes()).slice(-2);
-
-        dateFormatElement.textContent = today;
-        dateElement.textContent = `${currentHours}:${currentMinutes}`;
     </script>
 </body>
 </html>

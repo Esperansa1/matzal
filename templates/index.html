@@ -8,23 +8,25 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="{{ url_for('static', filename='stylesheet.css') }}" rel="stylesheet">
 </head>
 <body>
 
-    <nav class="navbar navbar-dark bg-primary">
-        <a class="navbar-brand" href="#">SIGIT MATZAL</a>
-
-
-
+    <nav class="navbar navbar-dark bg-primary d-flex align-items-center">
+        <a class="navbar-brand d-flex align-items-center" href="https://www.mitgaisim.idf.il/%D7%AA%D7%A4%D7%A7%D7%99%D7%93%D7%99%D7%9D/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C-%D7%90%D7%95%D7%9E%D7%92%D7%94/">
+            <img src="/static/favicon.ico" width="45" height="45" alt="" class="mx-2">
+            <label class="navbar-label">סיגיט מצ"ל</label>
+        </a>
+        <div class="mx-3">
+            <a href="{{ url_for('matzal') }}" class="btn btn-light matzal-btn">הצג מצ"ל נוכחי</a>
+        </div>
     </nav>
+    
 
     <div class="container">
-        <h1 class="mb-4">רשימת כיתה</h1>
-        <a href="{{ url_for('matzal') }}" class="btn btn-outline-primary mb-4">הצג מצ"ל נוכחי</a>
+        <h1 class="mb-2 mt-4">סטטוס כיתה</h1>
         <p>נוכחים: <span id="inListCount" class="badge bg-primary">{{ present_count }}</span></p>
-
-        <h3 class="mt-4">סטטוס כיתה</h3>
         <div id="nameList" class="row name-list">
                 {% for name, status in names.items() %}
                     <div class="mx-3 my-2 col-lg-2 col-md-4 col-sm-6">{{ name }} - {{ status }}</div>
@@ -45,20 +47,43 @@
             <div class="d-grid gap-2 d-md-flex justify-content-md-start">
                 <button onclick="addName()" class="btn btn-primary me-2">ערוך סטטוס</button>
                 <button onclick="resetNamesPrompt()" class="btn btn-danger me-2">אפס רשימה</button>
-                <button onclick="showTables()" class="btn btn-success">הצג חסרים</button>
+                <button onclick="set_all_attending()" class="btn btn-danger me-2">סמן כולם כנוכחים</button>
+                <button onclick="showTables()" class="btn btn-success me-2">הצג חסרים</button>
             </div>
         </div>
 
         <div id="tablesContainer"></div>
 
+        
     </div>
-
+        <footer class="text-center text-white ">
+          <div class="container pt-4">
+            <section class="mb-4">
+              <a
+                class="btn btn-link btn-floating btn-lg text-dark m-1"
+                href="https://dev.azure.com/sigit16"
+                role="button"
+                data-mdb-ripple-color="dark"
+                ><img src="static/azure.svg" width="30" height="30"></a>
+      
+              <a
+                class="btn btn-link btn-floating btn-lg text-dark m-1"
+                href="https://www.instagram.com/omega.thebest/"
+                role="button"
+                data-mdb-ripple-color="dark"
+                ><img src="static/instagram.png" width="30" height="30"></a>
+            </section>
+          </div>
+          <div class="text-center text-white bg-primary p-3">
+            נבנה על ידי אור אספרנסה ורועי בלום &copy;
+          </div>
+        </footer>
+      </div>
     <script>
         const allNames = {{ all_names | tojson | safe }};
         const namesData = {{ names | tojson | safe }};
 
         $(document).ready(function() {
-            // Autocomplete function for the name input field
             $("#nameInput").autocomplete({
                 source: function(request, response) {
                     let filteredNames = allNames.filter(name => name.startsWith(request.term));
@@ -142,6 +167,20 @@
             }
         }
 
+        function set_all_attending() {
+            const password = prompt('הכנס סיסמה:');
+            if (password) {
+                $.post('/set_all_attending', { password: password }, function(response) {
+                    if (response.success) {
+                        location.reload(); // Reload the page to reflect the reset data
+                    } else {
+                        alert('סיסמה שגויה.');
+                    }
+                });
+            }
+        }
+
+
         // Function to show the status tables for non-present students
         function showTables() {
             const tablesContainer = $('#tablesContainer');
@@ -184,6 +223,18 @@
         }
     }
         
+    function fetchUpdates() {
+        fetch('/api/updates') // Endpoint that provides the updated data
+            .then(response => response.json())
+            .then(data => {
+                // Update your page with the new data
+                updateList(data);
+            })
+            .catch(error => console.error('Error fetching updates:', error));
+    }
+
+    setInterval(fetchUpdates, 5000); 
+
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
