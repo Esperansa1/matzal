@@ -205,8 +205,8 @@
                 </ul>
             </div>
         </div>
-
-        <input class="name-placeholder" placeholder="שם החנטר">
+        <input class="name-placeholder" id="hantar_name" placeholder="שם החנטר">
+        
     </div>
     </div>
 
@@ -217,21 +217,22 @@
         function copy_to_clipboard(){
             var clipboardContent = document.getElementById("clipboard_data").innerText;
 
-            // Create a temporary textarea element to copy the text from
+            var inputText = document.querySelector("#hantar_name").value;
+
+            console.log(inputText);
+            
+            clipboardContent += "\n" + inputText;
+            
+            
             var tempTextarea = document.createElement("textarea");
             tempTextarea.value = clipboardContent;
 
-            // Append the textarea to the body (it won't be visible)
             document.body.appendChild(tempTextarea);
 
-            // Select the text in the textarea
             tempTextarea.select();
-            tempTextarea.setSelectionRange(0, 99999); // For mobile devices
+            tempTextarea.setSelectionRange(0, 99999);
 
-            // Copy the text to the clipboard
             document.execCommand("copy");
-
-            // Remove the temporary textarea
             document.body.removeChild(tempTextarea);
         }
 
@@ -264,9 +265,7 @@
         
 
         $(document).ready(function() {
-            // Set background blend mode
             if ($(window).width() > 480) {
-                // Set background blend mode only on larger screens
                 const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];
                 const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
                 $('body').css('background-blend-mode', randomBlendMode);
@@ -275,17 +274,12 @@
             function updateList(data) {
                 const $container = $("#nameList");
                 
-                // Clear existing content
                 $container.empty();
-
-                // Create an unordered list
-                // Check if bathroom data exists and create a list item
                 if (data.course_status.bathroom && data.course_status.bathroom.length > 0) {
                     const $li = $('<li></li>').text(`שירותים: ${data.course_status.bathroom.join(', ')}`);
                     $container.append($li);
                 }
 
-                // Check if break_time data exists and create a list item
                 if (data.course_status.break_time && data.course_status.break_time.length > 0) {
                     const $li = $('<li></li>').text(`בהפסקה: ${data.course_status.break_time.join(', ')}`);
                     $container.append($li);
@@ -296,7 +290,6 @@
                     $container.append($li);
                 }
 
-                // Check if other data exists and create a list item
                 if (data.course_status.other && data.course_status.other.length > 0) {
                     const $li = $('<li></li>').text(`אחר: ${data.course_status.other.join(', ')}`);
                     $container.append($li);
@@ -322,7 +315,7 @@
             }
 
             function fetchUpdates() {
-                fetch('/api/matzal') // Endpoint that provides the updated data
+                fetch('/api/matzal') 
                     .then(response => response.json())
                     .then(data => {
                         updateList(data);
