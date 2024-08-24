@@ -70,11 +70,16 @@ body.dark-mode {
 
 footer {
     font-weight: 700;
+    margin-top: 20px;
 }
 
 .dark-mode footer {
     background: #222222;
     color: #f1f1f1;
+}
+
+body, .card, .navbar {
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @media (max-width: 768px) {

@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>רשימת כיתה</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link href="{{ url_for('static', filename='stylesheet.css') }}" rel="stylesheet">
 </head>
 <body>
@@ -20,27 +17,27 @@
         <h1 class="mb-2 mt-4">סטטוס כיתה</h1>
         <p>נוכחים: <span id="inListCount" class="badge bg-primary">{{ present_count }}</span></p>
         <div id="nameList" class="row name-list">
-                {% for name, status in names.items() %}
-                    <div class="mx-3 my-2 col-lg-2 col-md-4 col-sm-6">{{ name }} - {{ status }}</div>
-                {% endfor %}
+            {% for name, status in names.items() %}
+                <div class="mx-3 my-2 col-lg-2 col-md-4 col-sm-6">{{ name }} - {{ status }}</div>
+            {% endfor %}
         </div>
 
         <p class="mt-4">חסרים: <span id="removedCount" class="badge bg-danger">{{ removed_count }}</span></p>
 
         <div class="mb-3">
-            <input type="text" id="nameInput" class="form-control mb-2" placeholder="הכנס שם">
-            <select id="statusInput" class="form-select mb-2">
+            <input type="text" id="nameInput" class="form-control mb-2" placeholder="הכנס שם" aria-label="הכנס שם">
+            <select id="statusInput" class="form-select mb-2" aria-label="בחר סטטוס">
                 <option value="נוכח">בכיתה</option>
                 <option value="שירותים">שירותים</option>
                 <option value="בהפסקה">בהפסקה</option>
                 <option value="אחר">אחר</option>
             </select>
-            <input type="text" id="reasonInput" class="form-control mb-2" placeholder="הכנס סיבה" style="display:none;">
+            <input type="text" id="reasonInput" class="form-control mb-2" placeholder="הכנס סיבה" style="display:none;" aria-label="הכנס סיבה">
             <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <button onclick="addName()" class="btn btn-primary me-2">ערוך סטטוס</button>
-                <button onclick="resetNamesPrompt()" class="btn btn-danger me-2">אפס רשימה</button>
-                <button onclick="set_all_attending()" class="btn btn-danger me-2">סמן כולם כנוכחים</button>
-                <button onclick="showTables()" class="btn btn-success me-2">הצג חסרים</button>
+                <button onclick="updateStatus()" class="btn btn-primary me-2">ערוך סטטוס</button>
+                <button onclick="resetListPrompt()" class="btn btn-danger me-2">אפס רשימה</button>
+                <button onclick="markAllAsPresent()" class="btn btn-danger me-2">סמן כולם כנוכחים</button>
+                <button onclick="showAbsentTables()" class="btn btn-success me-2">הצג חסרים</button>
             </div>
         </div>
 
@@ -49,156 +46,147 @@
     </div>
 
     {% include 'footer.html' %}
-      </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", () => {
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
             const currentTheme = localStorage.getItem('theme');
         
             if (currentTheme === 'dark') {
                 document.body.classList.add('dark-mode');
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun'); 
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
             }
         
-            themeToggle.addEventListener('click', function() {
+            themeToggle.addEventListener('click', () => {
                 document.body.classList.toggle('dark-mode');
-                
                 if (document.body.classList.contains('dark-mode')) {
-                    themeIcon.classList.remove('fa-moon');
-                    themeIcon.classList.add('fa-sun'); 
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
                     localStorage.setItem('theme', 'dark');
                 } else {
-                    themeIcon.classList.remove('fa-sun');
-                    themeIcon.classList.add('fa-moon'); 
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
                     localStorage.setItem('theme', 'light');
                 }
             });
-        });        
+        });
         
-
         const allNames = {{ all_names | tojson | safe }};
         const namesData = {{ names | tojson | safe }};
-
-        $(document).ready(function() {
+        
+        $(document).ready(() => {
+            setupAutocomplete();
+            setupStatusInputChange();
+            updateNameList(namesData);
+        });
+        
+        const setupAutocomplete = () => {
             $("#nameInput").autocomplete({
-                source: function(request, response) {
+                source: (request, response) => {
                     let filteredNames = allNames.filter(name => name.startsWith(request.term));
-
-                    if(filteredNames.length === 0)
-                        filteredNames = allNames.filter(name => name.includes(request.term)); 
-
+                    if (filteredNames.length === 0) {
+                        filteredNames = allNames.filter(name => name.includes(request.term));
+                    }
                     response(filteredNames.slice(0, 10));
                 }
             });
-
-            // Show or hide the reason input field based on the selected status
-            $('#statusInput').change(function() {
-                if ($(this).val() === 'אחר') {
-                    $('#reasonInput').show();
-                } else {
-                    $('#reasonInput').hide();
-                }
+        };
+        
+        const setupStatusInputChange = () => {
+            $('#statusInput').change(() => {
+                $('#reasonInput').toggle($('#statusInput').val() === 'אחר');
             });
-
-            // Initial data update when the page loads
-            updateList(namesData);
-        });
-
-        // Function to update the list of names and their statuses
-        function updateList(names) {
+        };
+        
+        const updateNameList = (names) => {
             const nameList = $('#nameList');
             nameList.empty();
-
-            // Sort the names alphabetically
+        
             const sortedNames = Object.entries(names).sort((a, b) => a[0].localeCompare(b[0]));
-
-            // Create list items for each name and their status
-            for (const [name, status] of sortedNames) {
-                const listItem = $('<div>').text(`${name} - ${status}`).addClass('mx-3 my-2 col-lg-2 col-md-4 col-sm-6');
+        
+            sortedNames.forEach(([name, status]) => {
+                const listItem = $(`<div>${name} - ${status}</div>`).addClass('mx-3 my-2 col-lg-2 col-md-4 col-sm-6');
                 nameList.append(listItem);
-            }
-
-            // Update the counts of present and removed students
+            });
+        
             $('#inListCount').text(Object.values(names).filter(status => status === 'נוכח').length);
             $('#removedCount').text(Object.values(names).filter(status => status !== 'נוכח').length);
-        }
-
-        // Function to handle adding or updating a name's status
-        function addName() {
+        };
+        
+        const updateStatus = () => {
             const nameInput = $('#nameInput').val().trim();
             const statusInput = $('#statusInput').val();
-            let reasonInput = $('#reasonInput').val().trim();
-
+            const reasonInput = $('#reasonInput').val().trim();
+        
+            if (!nameInput || !statusInput) {
+                alert('הכנס שם וסטטוס בבקשה.');
+                return;
+            }
+            
+            if (!allNames.includes(nameInput)) {
+                alert('השם שהוזן אינו נמצא ברשימת השמות. בבקשה הכנס שם תקין.');
+                return;
+            }
+        
             if (statusInput === 'אחר' && reasonInput === '') {
                 alert('הכנס סיבה בבקשה.');
                 return;
             }
-
+        
             const status = reasonInput ? `${statusInput} - ${reasonInput}` : statusInput;
-
-            if (nameInput === '') {
-                alert('הכנס שם בבקשה.');
-                return;
-            }
-
-            // Perform an AJAX POST request to update the name's status
-            $.post('/update', { name: nameInput, status: status, reason: reasonInput }, function() {
-                location.reload(); // Reload the page to reflect the updated data
-            }).fail(function(response) {
+        
+            $.post('/update', { name: nameInput, status: status, reason: reasonInput }, () => {
+                location.reload();
+            }).fail(response => {
                 alert(response.responseJSON.error);
             });
-        }
-
-        // Function to handle resetting the names list
-        function resetNamesPrompt() {
+        };
+        
+        const resetListPrompt = () => {
             const password = prompt('הכנס סיסמה:');
             if (password) {
-                $.post('/reset', { password: password }, function(response) {
+                $.post('/reset', { password: password }, response => {
                     if (response.success) {
-                        location.reload(); // Reload the page to reflect the reset data
+                        location.reload();
                     } else {
                         alert('סיסמה שגויה.');
                     }
                 });
             }
-        }
-
-        function set_all_attending() {
+        };
+        
+        const markAllAsPresent = () => {
             const password = prompt('הכנס סיסמה:');
             if (password) {
-                $.post('/set_all_attending', { password: password }, function(response) {
+                $.post('/set_all_attending', { password: password }, response => {
                     if (response.success) {
-                        location.reload(); // Reload the page to reflect the reset data
+                        location.reload();
                     } else {
                         alert('סיסמה שגויה.');
                     }
                 });
             }
-        }
-
-
-        // Function to show the status tables for non-present students
-        function showTables() {
+        };
+        
+        const showAbsentTables = () => {
             const tablesContainer = $('#tablesContainer');
             tablesContainer.empty();
-
+        
             const statuses = {
                 'שירותים': [],
                 'בהפסקה': [],
                 'אחר': []
             };
-
-            $('#nameList > div').each(function() {
+        
+            $('#nameList > div').each(function () {
                 const [name, ...parts] = $(this).text().split(' - ');
                 const mainStatus = parts[0];
                 const reason = parts.length > 1 ? parts.slice(1).join(' - ') : '';
-
+        
                 if (mainStatus !== 'נוכח') {
-                    if (!statuses[mainStatus]) {
-                        statuses[mainStatus] = [];
-                    }
                     if (mainStatus !== 'שירותים' && mainStatus !== 'בהפסקה') {
                         statuses['אחר'].push(`${name} - ${reason}`);
                     } else {
@@ -206,35 +194,30 @@
                     }
                 }
             });
-
-        for (const [status, names] of Object.entries(statuses)) {
-            if (names.length > 0) {
-
-                const row = $('<div>').text(`${status} (${names.length})`).addClass("row name-list");
-                row.append($('<hr my-2>'))
-                names.forEach(name => {
-                    const name_box = $('<div>').text(name).addClass("mx-3 my-2 col-lg-2 col-md-4 col-sm-6");
-                    row.append(name_box);
-                });
-                tablesContainer.append(row);
-            }
-        }
-    }
         
-    function fetchUpdates() {
-        fetch('/api/updates') // Endpoint that provides the updated data
-            .then(response => response.json())
-            .then(data => {
-                // Update your page with the new data
-                updateList(data);
-            })
-            .catch(error => console.error('Error fetching updates:', error));
-    }
-
-    setInterval(fetchUpdates, 5000); 
-
+            Object.entries(statuses).forEach(([status, names]) => {
+                if (names.length > 0) {
+                    const row = $(`<div>${status} (${names.length})</div>`).addClass("row name-list");
+                    row.append($('<hr my-2>'));
+                    names.forEach(name => {
+                        const nameBox = $(`<div>${name}</div>`).addClass("mx-3 my-2 col-lg-2 col-md-4 col-sm-6");
+                        row.append(nameBox);
+                    });
+                    tablesContainer.append(row);
+                }
+            });
+        };
+        
+        const fetchUpdates = () => {
+            fetch('/api/updates')
+                .then(response => response.json())
+                .then(data => {
+                    updateNameList(data);
+                })
+                .catch(error => console.error('Error fetching updates:', error));
+        };
+        
+        setInterval(fetchUpdates, 5000);        
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
