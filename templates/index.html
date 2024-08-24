@@ -19,6 +19,7 @@
             <label class="navbar-label">סיגיט מצ"ל</label>
         </a>
         <div class="mx-3">
+            <button id="theme-toggle" class="btn btn-light matzal-btn">Dark Mode</button>
             <a href="{{ url_for('matzal') }}" class="btn btn-light matzal-btn">הצג מצ"ל נוכחי</a>
         </div>
     </nav>
@@ -80,6 +81,32 @@
         </footer>
       </div>
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const currentTheme = localStorage.getItem('theme');
+        
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.textContent = 'White Mode'; 
+            } else {
+                themeToggle.textContent = 'Dark Mode'; 
+            }
+        
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                
+                let theme = 'light';
+                if (document.body.classList.contains('dark-mode')) {
+                    theme = 'dark';
+                    themeToggle.textContent = 'White Mode';
+                } else {
+                    themeToggle.textContent = 'Dark Mode'; 
+                }
+                localStorage.setItem('theme', theme);
+            });
+        });
+        
+
         const allNames = {{ all_names | tojson | safe }};
         const namesData = {{ names | tojson | safe }};
 

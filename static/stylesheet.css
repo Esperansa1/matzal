@@ -1,9 +1,16 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
 body {
     font-family: Arial, sans-serif;
     direction: rtl;
     font-family: "Arimo", sans-serif;
+    background: #ffffff;
+    color: #000000;
+}
+
+body.dark-mode {
+    background: #181818;
+    color: #f1f1f1;
 }
 
 .name-list {
@@ -17,7 +24,11 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-weight: 100;
+}
 
+.dark-mode .name-list > div {
+    background: #333333;
+    border: 1px solid #444444;
 }
 
 .status-table {
@@ -37,17 +48,33 @@ body {
     background: #f4f4f4;
 }
 
+.dark-mode .status-table th, .dark-mode .status-table td {
+    border: 1px solid #444444;
+    background: #333333;
+    color: #f1f1f1;
+}
+
 .navbar-brand {
     letter-spacing: 3px;
     font-size: 2rem;
 }
+
 .navbar {
     margin-bottom: 1rem;
 }
 
+.dark-mode .navbar {
+    background: #222222;
+    color: #f1f1f1;
+}
+
 footer {
     font-weight: 700;
+}
 
+.dark-mode footer {
+    background: #222222;
+    color: #f1f1f1;
 }
 
 @media (max-width: 768px) {
