@@ -295,10 +295,8 @@
                     })
                     .catch(error => console.error('Error fetching updates:', error));
             }
-
-            // Fetch updates every 10 seconds
             fetchUpdates();
-            setInterval(fetchUpdates, 3000); 
+            setInterval(fetchUpdates, 5000); 
         });
     </script>
 </body>
