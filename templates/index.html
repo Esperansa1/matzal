@@ -14,19 +14,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-dark bg-primary d-flex align-items-center">
-        <a class="navbar-brand d-flex align-items-center" href="https://www.mitgaisim.idf.il/%D7%AA%D7%A4%D7%A7%D7%99%D7%93%D7%99%D7%9D/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C-%D7%90%D7%95%D7%9E%D7%92%D7%94/">
-            <img src="/static/favicon.ico" width="45" height="45" alt="" class="mx-2">
-            <label class="navbar-label">סיגיט מצ"ל</label>
-        </a>
-        <div class="mx-3">
-            <button id="theme-toggle" class="btn btn-light matzal-btn">
-                <i id="theme-icon" class="fas fa-moon"></i>
-            </button>
-            <a href="{{ url_for('matzal') }}" class="btn btn-light matzal-btn">הצג מצ"ל נוכחי</a>
-        </div>
-    </nav>
-    
+    {% include 'nav.html' %}
 
     <div class="container">
         <h1 class="mb-2 mt-4">סטטוס כיתה</h1>
@@ -60,28 +48,10 @@
 
         
     </div>
-        <footer class="text-center text-white ">
-          <div class="container pt-4">
-            <section class="mb-4">
-              <a
-                class="btn btn-link btn-floating btn-lg text-dark m-1"
-                href="https://dev.azure.com/sigit16"
-                role="button"
-                data-mdb-ripple-color="dark"
-                ><img src="static/azure.svg" width="30" height="30"></a>
-      
-              <a
-                class="btn btn-link btn-floating btn-lg text-dark m-1"
-                href="https://www.instagram.com/omega.thebest/"
-                role="button"
-                data-mdb-ripple-color="dark"
-                ><img src="static/instagram.png" width="30" height="30"></a>
-            </section>
-          </div>
-          <div class="text-center text-white bg-primary p-3">
-            נבנה על ידי אור אספרנסה ורועי בלום &copy;
-          </div>
-        </footer>
+
+
+
+    {% include 'footer.html' %}
       </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
