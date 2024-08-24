@@ -56,23 +56,31 @@ def reset_names():
     password = request.form.get('password')
     if password == 'hantar':
         global inputted_names
-        inputted_names = {name: 'בהפסקה' for name in all_names}
+        inputted_names = {
+            name: 'בהפסקה' if not status.startswith('אחר') else status
+            for name, status in inputted_names.items()
+        }
         flash("The operation was completed successfully", 'success')
         return jsonify({'success': True})
     else:
         return jsonify({'success': False}), 403
+
 
 
 @app.route('/set_all_attending', methods=['POST'])
 def set_all_attending():
     password = request.form.get('password')
-    if password == 'hantar':  # Ensure this is the correct password being checked
+    if password == 'hantar': 
         global inputted_names
-        inputted_names = {name: 'נוכח' for name in all_names}
+        inputted_names = {
+            name: 'נוכח' if not status.startswith('אחר') else status
+            for name, status in inputted_names.items()
+        }
         flash("The operation was completed successfully", 'success')
         return jsonify({'success': True})
     else:
         return jsonify({'success': False}), 403
+
 
 @app.route('/api/updates')
 def get_updates():
