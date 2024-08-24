@@ -82,6 +82,7 @@ def get_updates():
 def get_matzal_updates():
     return jsonify(get_status_card())
 
+
 @app.route('/matzal')
 def matzal():
     status_card = get_status_card()
