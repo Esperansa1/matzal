@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מצל סיגיט</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&display=swap');
     
@@ -160,6 +162,13 @@
                 font-size: 14px;
             }
         }
+        .clipboard_btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        
     </style>
             
 </head>
@@ -179,6 +188,8 @@
     </nav>
 
     <div class="card">
+        <button class="clipboard_btn btn btn-outline-primary" onclick="copy_to_clipboard()">העתק</button>
+        <div id="clipboard_data">
         <div id="current-date"></div>
         <div id="current-datetime"></div>
         <div class="card-title">מצבה קורס סיגיט</div>
@@ -197,10 +208,34 @@
 
         <input class="name-placeholder" placeholder="שם החנטר">
     </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
+
+        function copy_to_clipboard(){
+            var clipboardContent = document.getElementById("clipboard_data").innerText;
+
+            // Create a temporary textarea element to copy the text from
+            var tempTextarea = document.createElement("textarea");
+            tempTextarea.value = clipboardContent;
+
+            // Append the textarea to the body (it won't be visible)
+            document.body.appendChild(tempTextarea);
+
+            // Select the text in the textarea
+            tempTextarea.select();
+            tempTextarea.setSelectionRange(0, 99999); // For mobile devices
+
+            // Copy the text to the clipboard
+            document.execCommand("copy");
+
+            // Remove the temporary textarea
+            document.body.removeChild(tempTextarea);
+        }
+
+
         document.addEventListener("DOMContentLoaded", function() {
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
