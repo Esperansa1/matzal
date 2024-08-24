@@ -71,6 +71,32 @@
         .matzan {
             font-size: 20px;
         }
+
+        @media (max-width: 480px) {
+            body {
+                background-size: cover;
+                background-position: center;
+                height: 100vh;
+                padding: 0;
+            }
+    
+            .card {
+                max-width: 90%;
+                padding: 15px;
+            }
+    
+            .card-title {
+                font-size: 20px;
+            }
+    
+            .matzan {
+                font-size: 18px;
+            }
+    
+            .name-placeholder {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -99,9 +125,12 @@
     <script>
         $(document).ready(function() {
             // Set background blend mode
-            const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];
-            const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
-            $('body').css('background-blend-mode', randomBlendMode);
+            if ($(window).width() > 480) {
+                // Set background blend mode only on larger screens
+                const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];
+                const randomBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
+                $('body').css('background-blend-mode', randomBlendMode);
+            }
 
             function updateList(data) {
                 const $container = $("#nameList");

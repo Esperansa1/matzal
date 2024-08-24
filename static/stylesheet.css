@@ -49,3 +49,27 @@ footer {
     font-weight: 700;
 
 }
+
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.5rem;
+    }
+
+    .name-list > div {
+        flex: 1 1 calc(50% - 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .name-list > div {
+        flex: 1 1 calc(100% - 20px);
+    }
+
+    .status-table th, .status-table td {
+        padding: 6px;
+    }
+}
