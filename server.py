@@ -17,7 +17,7 @@ all_names = [
     "איתן רפאל צ'רטוף", "הוד ניסן", "תומר חאיק"
 ]
 
-inputted_names = {name: 'בהפסקה' for name in all_names}
+inputted_names = {name: 'נוכח' for name in all_names}
 
 @app.route('/')
 def index():
@@ -94,6 +94,7 @@ def get_status_card():
     present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
     bathroom = [name for name, status in inputted_names.items() if status == 'שירותים']
     break_time = [name for name, status in inputted_names.items() if status == 'בהפסקה']
+    technical_issue = [name for name, status in inputted_names.items() if status == 'תקלה טכנית']
     other = [f"{name} - {' '.join(status.split(' - ')[1:])}" for name, status in inputted_names.items() if
              status.startswith('אחר')]
 
@@ -106,6 +107,7 @@ def get_status_card():
             'missing_count': len(inputted_names) - present_count,
             'bathroom': bathroom,
             'break_time': break_time,
+            'technical_issue': technical_issue,
             'other': other,
         }
     }
@@ -119,6 +121,7 @@ def convert_status_card_to_string(status_card):
     present_count = course_status['present_count']
     bathroom = f"שירותים: {', '.join(course_status['bathroom'])}" if course_status['bathroom'] else ''
     break_time = f"בהפסקה: {', '.join(course_status['break_time'])}" if course_status['break_time'] else ''
+    technical_issue = f"'תקלה טכנית: {', '.join(course_status['technical_issue'])}" if course_status['technical_issue'] else ''
     other = f"אחר: {', '.join(course_status['other'])}" if course_status['other'] else ''
 
     status_string = (
@@ -130,6 +133,7 @@ def convert_status_card_to_string(status_card):
         f"חסרים: {course_status['missing_count']}\n"
         f"{bathroom}\n"
         f"{break_time}\n"
+        f"{technical_issue}\n"
         f"{other}"
     )
 

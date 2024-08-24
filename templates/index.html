@@ -30,6 +30,7 @@
                 <option value="נוכח">בכיתה</option>
                 <option value="שירותים">שירותים</option>
                 <option value="בהפסקה">בהפסקה</option>
+                <option value="תקלה טכנית">תקלה טכנית</option>
                 <option value="אחר">אחר</option>
             </select>
             <input type="text" id="reasonInput" class="form-control mb-2" placeholder="הכנס סיבה" style="display:none;" aria-label="הכנס סיבה">
@@ -178,6 +179,7 @@
             const statuses = {
                 'שירותים': [],
                 'בהפסקה': [],
+                'תקלה טכנית': [],
                 'אחר': []
             };
         
@@ -187,7 +189,7 @@
                 const reason = parts.length > 1 ? parts.slice(1).join(' - ') : '';
         
                 if (mainStatus !== 'נוכח') {
-                    if (mainStatus !== 'שירותים' && mainStatus !== 'בהפסקה') {
+                    if (mainStatus !== 'שירותים' && mainStatus !== 'בהפסקה' && mainStatus !== 'תקלה טכנית') {
                         statuses['אחר'].push(`${name} - ${reason}`);
                     } else {
                         statuses[mainStatus].push(`${name} - ${mainStatus}`);

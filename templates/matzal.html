@@ -256,6 +256,11 @@
                     $container.append($li);
                 }
 
+                if (data.course_status.technical_issue && data.course_status.technical_issue.length > 0) {
+                    const $li = $('<li></li>').text(`תקלה טכנית: ${data.course_status.technical_issue.join(', ')}`);
+                    $container.append($li);
+                }
+
                 // Check if other data exists and create a list item
                 if (data.course_status.other && data.course_status.other.length > 0) {
                     const $li = $('<li></li>').text(`אחר: ${data.course_status.other.join(', ')}`);
