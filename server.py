@@ -1,10 +1,11 @@
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from markupsafe import escape
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hantar'
 
-# List of names to track
+
 all_names = [
     "אור אספרנסה", "עמית אביב", "אוהד אוחנה", "הראל כהן", "הילה חמוי", "אופק אביסרור", "אגם רחמים",
     "אדם שפירא", "אוריאל טייאר", "אוריה כהן", "אלי רזומובסקי", "אסף דמתי", "ויויאן יבגנייב", "אופק ונטורה",
@@ -16,9 +17,7 @@ all_names = [
     "איתן רפאל צ'רטוף", "הוד ניסן", "תומר חאיק"
 ]
 
-# Initialize with all students in "בהפסקה"
 inputted_names = {name: 'בהפסקה' for name in all_names}
-
 
 @app.route('/')
 def index():
@@ -28,15 +27,19 @@ def index():
         names=inputted_names,
         present_count=present_count,
         removed_count=len(inputted_names) - present_count,
-        all_names=all_names  # Ensure all_names is passed to the template
+        all_names=all_names  
     )
 
 
 @app.route('/update', methods=['POST'])
 def update_name():
-    name = request.form.get('name')
-    status = request.form.get('status')
-    reason = request.form.get('reason', '')
+    return update_name_status(request.form.get('name'), request.form.get('status'), request.form.get('reason', ''))
+
+
+def update_name_status(name, status, reason=''):
+    name = escape(name)
+    status = escape(status)
+    reason = escape(reason)
 
     if name in all_names:
         if status == 'אחר' and reason:
