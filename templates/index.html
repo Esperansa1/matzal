@@ -15,6 +15,8 @@
 
     {% include 'nav.html' %}
 
+    <h3 id="qotd" class="text-center text-wrap"></h3>
+
     <div class="container">
         <h1 class="mb-2 mt-4">סטטוס כיתה</h1>
         <p>נוכחים: <span id="inListCount" class="badge bg-primary">{{ present_count }}</span></p>
@@ -55,7 +57,29 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <script>
+
         document.addEventListener("DOMContentLoaded", () => {
+            const quotes = ['צעד קטן לקב"ן צעד גדול לאזרחות',
+            'כשאני עשיתי קווים בלבנון אתה עשית קווים במחברת',
+            'חרא יוצא פעם ביום אני פעם בשבועיים עדיף להיות חרא',
+            'ההגיון השתחרר,הצדק עוד לא התגייס והטמטום חתם קבע',
+            'עדיף להיות עציץ בבית שימוש מחייל בחיל חימוש',
+            'כשהמצב בטטה והכיס ריק גם עגבנייה תיחשב לסטייק',
+            'אתה כל כך צעיר שמהפחית ששתיתי בבק"ום עשו תדיסקית שלך',
+            'אם לא תלמד, תהיה נגד, אם תלשין, תהיה קצין',
+            'ננוח ביום כדי שנוכל לישון בלילה',
+            'כשנולדתי בכיתי, כשהתגייסתי הבנתי למה',
+            'תעשה לך פיתה עם סרטן!',
+            'זה החיה הכי מגעילה בטבע',
+            'אתה תשב על הודי!',
+            'אין לזה מילה בעברית',
+            'עשר שקל למפגרים?',
+            ]
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            document.getElementById('qotd').innerText = `"${quotes[randomIndex]}"`;
+
+
+
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
             const currentTheme = localStorage.getItem('theme');
@@ -75,6 +99,7 @@
                     localStorage.setItem('theme', 'light');
                 }
             });
+
         });
         
         const allNames = {{ all_names | tojson | safe }};
