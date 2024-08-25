@@ -192,6 +192,7 @@
         };
         
         const showAbsentTables = () => {
+            
             const tablesContainer = $('#tablesContainer');
             tablesContainer.empty();
         
@@ -234,10 +235,11 @@
                 .then(response => response.json())
                 .then(data => {
                     updateNameList(data);
+                    showAbsentTables();
                 })
                 .catch(error => console.error('Error fetching updates:', error));
         };
-        
+        showAbsentTables();
         setInterval(fetchUpdates, 10000);        
     </script>
 </body>
