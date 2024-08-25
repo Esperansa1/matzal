@@ -4,10 +4,10 @@ from markupsafe import escape
 import json
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'hantar'
 
 datafile = json.load(open('data.json', 'r', encoding='utf-8'))
 all_names = datafile['names']
+app.config['SECRET_KEY'] = datafile['password']
 
 inputted_names = {name: 'נוכח' for name in all_names}
 
