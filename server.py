@@ -1,18 +1,10 @@
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from markupsafe import escape
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hantar'
 
-# Initialize Limiter with default limits
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"]
-)
 
 all_names = [
     "אור אספרנסה", "עמית אביב", "אוהד אוחנה", "הראל כהן", "הילה חמוי", "אופק אביסרור", "אגם רחמים",
@@ -28,7 +20,6 @@ all_names = [
 inputted_names = {name: 'נוכח' for name in all_names}
 
 @app.route('/')
-@limiter.limit("10 per minute")
 def index():
     present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
     return render_template(
@@ -39,10 +30,11 @@ def index():
         all_names=all_names  
     )
 
+
 @app.route('/update', methods=['POST'])
-@limiter.limit("5 per minute")
 def update_name():
     return update_name_status(request.form.get('name'), request.form.get('status'), request.form.get('reason', ''))
+
 
 def update_name_status(name, status, reason=''):
     name = escape(name)
@@ -58,8 +50,8 @@ def update_name_status(name, status, reason=''):
     else:
         return jsonify({'error': 'Name not found in the list.'}), 404
 
+
 @app.route('/reset', methods=['POST'])
-@limiter.limit("3 per minute")
 def reset_names():
     password = request.form.get('password')
     if password == 'hantar':
@@ -73,8 +65,9 @@ def reset_names():
     else:
         return jsonify({'success': False}), 403
 
+
+
 @app.route('/set_all_attending', methods=['POST'])
-@limiter.limit("3 per minute")
 def set_all_attending():
     password = request.form.get('password')
     if password == 'hantar': 
@@ -88,21 +81,21 @@ def set_all_attending():
     else:
         return jsonify({'success': False}), 403
 
+
 @app.route('/api/updates')
-@limiter.limit("20 per minute")
 def get_updates():
     return jsonify(inputted_names)
 
 @app.route('/api/matzal')
-@limiter.limit("20 per minute")
 def get_matzal_updates():
     return jsonify(get_status_card())
 
+
 @app.route('/matzal')
-@limiter.limit("10 per minute")
 def matzal():
     status_card = get_status_card()
     return render_template('matzal.html', status_card=status_card)
+
 
 def get_status_card():
     date_today = datetime.now().strftime('%Y-%m-%d')
@@ -129,6 +122,7 @@ def get_status_card():
     }
     return status_card
 
+
 def convert_status_card_to_string(status_card):
     date_today = status_card['date_today']
     current_time = status_card['current_time']
@@ -136,14 +130,14 @@ def convert_status_card_to_string(status_card):
     present_count = course_status['present_count']
     bathroom = f"שירותים: {', '.join(course_status['bathroom'])}" if course_status['bathroom'] else ''
     break_time = f"בהפסקה: {', '.join(course_status['break_time'])}" if course_status['break_time'] else ''
-    technical_issue = f"תקלה טכנית: {', '.join(course_status['technical_issue'])}" if course_status['technical_issue'] else ''
+    technical_issue = f"'תקלה טכנית: {', '.join(course_status['technical_issue'])}" if course_status['technical_issue'] else ''
     other = f"אחר: {', '.join(course_status['other'])}" if course_status['other'] else ''
 
     status_string = (
         f"תאריך של היום: {date_today}\n"
         f"שעה נוכחית: {current_time}\n"
-        f"מצב קורס סיגינט\n"
-        f"מצב כולל: {course_status['total_count']}\n"
+        f"מצבה קורס סיגיט\n"
+        f"מצן: {course_status['total_count']}\n"
         f"נוכחים: {present_count}\n"
         f"חסרים: {course_status['missing_count']}\n"
         f"{bathroom}\n"
@@ -153,6 +147,7 @@ def convert_status_card_to_string(status_card):
     )
 
     return status_string
+
 
 if __name__ == '__main__':
     app.run()
