@@ -101,7 +101,6 @@
         const setupAutocomplete = () => {
             $("#nameInput").autocomplete({
                 source: (request, response) => {
-                    console.log(allNames);
                     let filteredNames = allNames.filter(name => name.startsWith(request.term));
                     if (filteredNames.length === 0) {
                         filteredNames = allNames.filter(name => name.includes(request.term));
@@ -152,14 +151,7 @@
                 return;
             }
         
-
-            if(statusInput === 'אחר'){
-                const status = reasonInput ? `${statusInput} - ${reasonInput}` : statusInput;
-            }
-            else{
-                const status = statusInput;
-            }
-
+            const status = reasonInput && statusInput === 'אחר' ? `${statusInput} - ${reasonInput}` : statusInput;
             $.post('/update', { name: nameInput, status: status, reason: reasonInput }, () => {
                 location.reload();
             }).fail(response => {
