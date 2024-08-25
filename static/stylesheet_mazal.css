@@ -18,6 +18,10 @@ body {
     z-index: 1000;
     font-family: 'Arimo', sans-serif;
 }
+
+.navbar .mx-3 a:hover {
+    margin-right: 5px;
+}
 .navbar .mx-3 button:hover,
 .navbar .mx-3 a:hover {
     transform: scale(1.1);

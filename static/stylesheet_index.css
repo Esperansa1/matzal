@@ -63,6 +63,10 @@ body.dark-mode {
     margin-bottom: 1rem;
 }
 
+.navbar .mx-3 a:hover {
+    margin-right: 7px;
+}
+
 .navbar .mx-3 button:hover,
 .navbar .mx-3 a:hover {
     transform: scale(1.1);
