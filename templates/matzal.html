@@ -169,9 +169,7 @@
             left: 10px;
         }
 
-        
     </style>
-            
 </head>
 <body>
 
@@ -202,7 +200,6 @@
             <div>
                 <strong>פירוט:</strong>
                 <ul id="nameList">
-
                 </ul>
             </div>
         </div>
@@ -221,7 +218,6 @@
             var inputText = document.querySelector("#hantar_name").value;            
             clipboardContent += "\n" + inputText;
             
-            
             var tempTextarea = document.createElement("textarea");
             tempTextarea.value = clipboardContent;
 
@@ -233,7 +229,6 @@
             document.execCommand("copy");
             document.body.removeChild(tempTextarea);
         }
-
 
         document.addEventListener("DOMContentLoaded", function() {
             const themeToggle = document.getElementById('theme-toggle');
@@ -261,7 +256,6 @@
             });
         });        
         
-
         $(document).ready(function() {
             if ($(window).width() > 480) {
                 const blendModes = ["color-burn", "darken", "difference", "exclusion", "hard-light", "luminosity", "multiply", "normal"];

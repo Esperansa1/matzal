@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link href="{{ url_for('static', filename='stylesheet.css') }}" rel="stylesheet">
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-
 </head>
 <body>
 
@@ -69,8 +68,6 @@
             const randomIndex = Math.floor(Math.random() * quotes.length);
             document.getElementById('qotd').innerText = `"${quotes[randomIndex]}"`;
 
-
-
             const themeToggle = document.getElementById('theme-toggle');
             const themeIcon = document.getElementById('theme-icon');
             const currentTheme = localStorage.getItem('theme');
@@ -90,7 +87,6 @@
                     localStorage.setItem('theme', 'light');
                 }
             });
-
         });
         
         const allNames = {{ all_names | tojson | safe }};
@@ -192,6 +188,7 @@
         };
         
         const showAbsentTables = () => {
+            
             const tablesContainer = $('#tablesContainer');
             tablesContainer.empty();
         
@@ -234,11 +231,13 @@
                 .then(response => response.json())
                 .then(data => {
                     updateNameList(data);
+                    showAbsentTables();
                 })
                 .catch(error => console.error('Error fetching updates:', error));
         };
-        
+        showAbsentTables();
         setInterval(fetchUpdates, 10000);        
+
     </script>
 </body>
 </html>
