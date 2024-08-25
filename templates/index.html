@@ -114,6 +114,7 @@
         const setupAutocomplete = () => {
             $("#nameInput").autocomplete({
                 source: (request, response) => {
+                    console.log(allNames);
                     let filteredNames = allNames.filter(name => name.startsWith(request.term));
                     if (filteredNames.length === 0) {
                         filteredNames = allNames.filter(name => name.includes(request.term));
