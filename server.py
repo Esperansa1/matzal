@@ -4,13 +4,13 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from markupsafe import escape
 import json
-from file_dict import fileDict
+from file_dict import FileDict
 from pathlib import Path
 
 app = Flask(__name__)
 
 THIS_FOLDER = Path(__file__).parent.resolve()
-data_file = f"{THIS_FOLDER}/data.json"
+data_file = f"{THIS_FOLDER}/json/data.json"
 
 with open(data_file, 'r', encoding='utf-8') as f:
     datafile = json.load(f)
@@ -25,7 +25,7 @@ limiter = Limiter(
     strategy='fixed-window'
 )
 
-inputted_names = fileDict({name: 'נוכח' for name in all_names}, attempt_load=True)
+inputted_names = FileDict({name: 'נוכח' for name in all_names}, attempt_load=True)
 
 @app.route('/')
 @limiter.limit("49 per minute")
@@ -66,7 +66,7 @@ def reset_names():
     password = request.form.get('password')
     if password == 'hantar':
         global inputted_names
-        inputted_names = fileDict({
+        inputted_names = FileDict({
             name: 'בהפסקה' if not status.startswith('אחר') else status
             for name, status in inputted_names.items()
         })
@@ -81,7 +81,7 @@ def set_all_attending():
     password = request.form.get('password')
     if password == 'hantar': 
         global inputted_names
-        inputted_names = fileDict({
+        inputted_names = FileDict({
             name: 'נוכח' if not status.startswith('אחר') else status
             for name, status in inputted_names.items()
         })

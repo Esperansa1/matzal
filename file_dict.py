@@ -1,11 +1,17 @@
 import json
 
-class fileDict:
+"""
+This class is supposed to act as a dictionary
+    that when updated, also updates a file associated with it.
+Essenically a wrapper for a dictionary.
+This implementation of saving the statuses was chosen for minimal refactoring.
+"""
+class FileDict:
     def updatefile(self):
         with open(self.filename, 'w', encoding='utf8') as f:
             json.dump(self.dic, f, ensure_ascii=False)
 
-    def __init__(self, initdict, filename = 'inputted_names.json', attempt_load=False):
+    def __init__(self, initdict, filename = 'json/inputted_names.json', attempt_load=False):
         if attempt_load:
             try:
                 with open(filename, 'r', encoding='utf8') as f:
