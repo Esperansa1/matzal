@@ -6,6 +6,10 @@ from markupsafe import escape
 import json
 from file_dict import FileDict
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
 app = Flask(__name__)
 
@@ -16,8 +20,8 @@ with open(data_file, 'r', encoding='utf-8') as f:
     datafile = json.load(f)
 
 all_names = datafile['names']
-app.config['SECRET_KEY'] = datafile['password']
-
+app.config['SECRET_KEY'] = None
+ 
 limiter = Limiter(
     get_remote_address,
     app=app,
@@ -27,6 +31,22 @@ limiter = Limiter(
 
 inputted_names = FileDict({name: 'נוכח' for name in all_names}, attempt_load=True)
 
+def load_credentials():
+    global credentials
+    credentials = retrieve_credentials()
+    app.config['SECRET_KEY'] = credentials["hantar_password"]
+    
+def retrieve_credentials():
+    load_dotenv()
+    uri = os.getenv("MONGO_URI")
+
+    client = MongoClient(uri, server_api=ServerApi('1'))
+    db = client['private_data'] 
+    collection = db['credentials']  
+    stored_credentials = collection.find_one({})
+    return stored_credentials
+
+load_credentials() 
 @app.route('/')
 @limiter.limit("49 per minute")
 def index():
@@ -63,8 +83,9 @@ def update_name_status(name, status, reason=''):
 @app.route('/reset', methods=['POST'])
 @limiter.limit("49 per minute")
 def reset_names():
+    credentials = retrieve_credentials()
     password = request.form.get('password')
-    if password == 'hantar':
+    if password == credentials["hantar_password"]:
         global inputted_names
         inputted_names = FileDict({
             name: 'בהפסקה' if not status.startswith('אחר') else status
@@ -78,8 +99,9 @@ def reset_names():
 @app.route('/set_all_attending', methods=['POST'])
 @limiter.limit("49 per minute")
 def set_all_attending():
+    credentials = retrieve_credentials()
     password = request.form.get('password')
-    if password == 'hantar': 
+    if password == credentials["hantar_password"]: 
         global inputted_names
         inputted_names = FileDict({
             name: 'נוכח' if not status.startswith('אחר') else status
@@ -155,6 +177,8 @@ def convert_status_card_to_string(status_card):
     )
 
     return status_string
+
+
 
 if __name__ == '__main__':
     app.run()
