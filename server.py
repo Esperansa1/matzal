@@ -4,6 +4,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from markupsafe import escape
 import json
+from fileDict import fileDict
 
 app = Flask(__name__)
 
@@ -18,7 +19,7 @@ limiter = Limiter(
     strategy='fixed-window'
 )
 
-inputted_names = {name: 'נוכח' for name in all_names}
+inputted_names = fileDict({name: 'נוכח' for name in all_names}, attempt_load=True)
 
 @app.route('/')
 @limiter.limit("49 per minute")
@@ -57,10 +58,10 @@ def reset_names():
     password = request.form.get('password')
     if password == 'hantar':
         global inputted_names
-        inputted_names = {
+        inputted_names = fileDict({
             name: 'בהפסקה' if not status.startswith('אחר') else status
             for name, status in inputted_names.items()
-        }
+        })
         flash("The operation was completed successfully", 'success')
         return jsonify({'success': True})
     else:
@@ -72,10 +73,10 @@ def set_all_attending():
     password = request.form.get('password')
     if password == 'hantar': 
         global inputted_names
-        inputted_names = {
+        inputted_names = fileDict({
             name: 'נוכח' if not status.startswith('אחר') else status
             for name, status in inputted_names.items()
-        }
+        })
         flash("The operation was completed successfully", 'success')
         return jsonify({'success': True})
     else:
@@ -84,7 +85,7 @@ def set_all_attending():
 @app.route('/api/updates')
 @limiter.limit("49 per minute")
 def get_updates():
-    return jsonify(inputted_names)
+    return inputted_names.toJSON()
 
 @app.route('/api/matzal')
 @limiter.limit("49 per minute")

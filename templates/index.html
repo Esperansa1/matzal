@@ -90,7 +90,7 @@
         });
         
         const allNames = {{ all_names | tojson | safe }};
-        const namesData = {{ names | tojson | safe }};
+        const namesData = {{ names.toJSON() | safe }};
         
         $(document).ready(() => {
             setupAutocomplete();
