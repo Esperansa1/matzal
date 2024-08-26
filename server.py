@@ -4,7 +4,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from markupsafe import escape
 import json
-from fileDict import fileDict
+from file_dict import fileDict
 from pathlib import Path
 
 app = Flask(__name__)
