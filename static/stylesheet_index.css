@@ -63,6 +63,17 @@ body.dark-mode {
     margin-bottom: 1rem;
 }
 
+.navbar .mx-3 a:hover {
+    margin-right: 7px;
+}
+
+.navbar .mx-3 button:hover,
+.navbar .mx-3 a:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease-in-out;
+    filter: brightness(1.2);
+}
+
 .dark-mode .navbar {
     background: #222222;
     color: #f1f1f1;
@@ -71,6 +82,12 @@ body.dark-mode {
 footer {
     font-weight: 700;
     margin-top: 20px;
+}
+
+footer a img:hover {
+    transform: scale(1.2); /* Increase the size slightly */
+    transition: transform 0.2s ease-in-out; /* Smooth transition */
+    filter: brightness(1.2); /* Make the icon brighter */
 }
 
 .dark-mode footer {

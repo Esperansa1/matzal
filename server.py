@@ -7,7 +7,6 @@ import json
 
 app = Flask(__name__)
 
-
 datafile = json.load(open('data.json', 'r', encoding='utf-8'))
 all_names = datafile['names']
 app.config['SECRET_KEY'] = datafile['password']
