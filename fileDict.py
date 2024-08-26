@@ -2,12 +2,14 @@ import json
 
 class fileDict:
     def updatefile(self):
-        json.dump(self.dic, open(self.filename, 'w', encoding='utf8'), ensure_ascii=False)
+        with open(self.filename, 'w', encoding='utf8') as f:
+            json.dump(self.dic, f, ensure_ascii=False)
 
     def __init__(self, initdict, filename = 'inputted_names.json', attempt_load=False):
         if attempt_load:
             try:
-                self.dic = json.load(open(filename, 'r', encoding='utf8'))
+                with open(filename, 'r', encoding='utf8') as f:
+                    self.dic = json.load(f)
             except Exception as ex:
                 print('Something wrong went with loading inputted_names:', ex)
                 self.dic = initdict
