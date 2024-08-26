@@ -1,6 +1,6 @@
 import json
 
-class fileDict:
+class FileDict:
     def updatefile(self):
         with open(self.filename, 'w', encoding='utf8') as f:
             json.dump(self.dic, f, ensure_ascii=False)
