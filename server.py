@@ -10,7 +10,7 @@ from pathlib import Path
 app = Flask(__name__)
 
 THIS_FOLDER = Path(__file__).parent.resolve()
-data_file = f"{THIS_FOLDER}/data.json"
+data_file = f"{THIS_FOLDER}/json/data.json"
 
 with open(data_file, 'r', encoding='utf-8') as f:
     datafile = json.load(f)

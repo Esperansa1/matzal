@@ -5,7 +5,7 @@ class FileDict:
         with open(self.filename, 'w', encoding='utf8') as f:
             json.dump(self.dic, f, ensure_ascii=False)
 
-    def __init__(self, initdict, filename = 'inputted_names.json', attempt_load=False):
+    def __init__(self, initdict, filename = 'json/inputted_names.json', attempt_load=False):
         if attempt_load:
             try:
                 with open(filename, 'r', encoding='utf8') as f:
