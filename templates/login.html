@@ -27,7 +27,7 @@
     <div class="wrapper fadeInDown">
         <div id="formContent">
             <div class="fadeIn first">
-                <img src="user_icon.png" id="icon" alt="User Icon" style="width: 100px; height: 100px;" />
+                <img src="/static/user_icon.png" id="icon" alt="User Icon" style="width: 100px; height: 100px;" />
             </div>
 
             <!-- Login Form -->
@@ -92,6 +92,7 @@
             const hashedPassword = sha1(inputPassword);
             console.log(hashedPassword);
             if (inputUsername === globalUsername && hashedPassword === globalPasswordHash) {
+                window.location.href = "index";
                 alert('Login successful!');
                 // Redirect or perform other actions
             } else {

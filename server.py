@@ -22,6 +22,11 @@ inputted_names = {name: 'נוכח' for name in all_names}
 
 @app.route('/')
 @limiter.limit("49 per minute")
+def login():
+    return render_template('login.html')
+
+@app.route('/index')
+@limiter.limit("49 per minute")
 def index():
     present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
     return render_template(
@@ -31,6 +36,18 @@ def index():
         removed_count=len(inputted_names) - present_count,
         all_names=all_names  
     )
+
+@app.route('/login', methods=['POST'])
+@limiter.limit("49 per minute")
+def login_action():
+    username = request.form.get('username').lower()
+    password = request.form.get('password')
+    hashed_password = sha1(password)  # assuming sha1 function is defined
+    if username == 'omega' and hashed_password == 'a5beecb706dcad5c218f5082fea48530e6f91820':
+        return redirect(url_for('index'))
+    else:
+        flash('Incorrect username or password!', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/update', methods=['POST'])
 @limiter.limit("49 per minute")
