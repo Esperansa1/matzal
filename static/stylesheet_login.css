@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400..700;1,400..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
 html {
   background-color: #56baed;
   transition: background-color 0.3s ease-in-out;
@@ -11,6 +13,7 @@ body {
 }
 
 .navbar {
+  font-family: "Arimo", sans-serif;
   margin-bottom: 1rem;
   direction: rtl;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;

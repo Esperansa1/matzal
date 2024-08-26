@@ -31,8 +31,8 @@
             </div>
 
             <!-- Login Form -->
-            <form id="login-form">
-                <input type="text" id="login" class="fadeIn second" name="login" placeholder="Username">
+            <form id="login-form" action="{{ url_for('login_action') }}" method="POST">
+                <input type="text" id="login" class="fadeIn second" name="username" placeholder="Username">
                 <input type="password" id="password" class="fadeIn third" name="password" placeholder="Password">
                 <label style="display: block; margin: 10px 0;">
                     <input type="checkbox" id="show-password"> Show Password
@@ -49,9 +49,6 @@
 
     <!-- Dark Mode Toggle Script -->
     <script>
-        const globalUsername = 'omega';
-        const globalPasswordHash = 'a5beecb706dcad5c218f5082fea48530e6f91820';
-
         if (localStorage.getItem('theme') === 'dark') {
             document.body.classList.add('dark-mode');
             document.getElementById('theme-icon').classList.remove('fa-moon');
@@ -83,46 +80,6 @@
                 passwordInput.type = 'password';
             }
         });
-
-        // Form submission handling
-        document.getElementById('login-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const inputUsername = document.getElementById('login').value.toLowerCase();
-            const inputPassword = document.getElementById('password').value;
-            const hashedPassword = sha1(inputPassword);
-            console.log(hashedPassword);
-            if (inputUsername === globalUsername && hashedPassword === globalPasswordHash) {
-                window.location.href = "index";
-                alert('Login successful!');
-                // Redirect or perform other actions
-            } else {
-                alert('Incorrect username or password!');
-            }
-        });
-      
-              // Simple SHA1 hash function
-              function sha1(msg) {
-                  function rotl(n, s) { return n << s | n >>> 32 - s; }
-                  function tohex(i) { for (var h = "", s = 28; ; s -= 4) { h += (i >>> s & 0xf).toString(16); if (!s) return h; } }
-                  var H0 = 0x67452301, H1 = 0xefcdab89, H2 = 0x98badcfe, H3 = 0x10325476, H4 = 0xc3d2e1f0;
-                  var i, t, W = new Array(80), ml = msg.length, wa = [];
-                  msg += String.fromCharCode(0x80);
-                  while (msg.length % 4) msg += String.fromCharCode(0);
-                  for (i = 0; i < msg.length; i += 4) wa.push(msg.charCodeAt(i) << 24 | msg.charCodeAt(i + 1) << 16 | msg.charCodeAt(i + 2) << 8 | msg.charCodeAt(i + 3));
-                  while (wa.length % 16) wa.push(0);
-                  wa.push(ml >>> 29), wa.push((ml << 3) & 0xffffffff);
-                  for (var bo = 0; bo < wa.length; bo += 16) {
-                      for (i = 0; i < 16; i++) W[i] = wa[bo + i];
-                      for (i = 16; i < 80; i++) W[i] = rotl(W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16], 1);
-                      var A = H0, B = H1, C = H2, D = H3, E = H4;
-                      for (i = 0; i < 80; i++) {
-                          t = rotl(A, 5) + E + W[i] + (i < 20 ? (B & C | ~B & D) + 0x5a827999 : i < 40 ? (B ^ C ^ D) + 0x6ed9eba1 : i < 60 ? (B & C | B & D | C & D) + 0x8f1bbcdc : (B ^ C ^ D) + 0xca62c1d6) & 0xffffffff;
-                          E = D, D = C, C = rotl(B, 30), B = A, A = t;
-                      }
-                      H0 = H0 + A & 0xffffffff, H1 = H1 + B & 0xffffffff, H2 = H2 + C & 0xffffffff, H3 = H3 + D & 0xffffffff, H4 = H4 + E & 0xffffffff;
-                  }
-                  return tohex(H0) + tohex(H1) + tohex(H2) + tohex(H3) + tohex(H4);
-              }
     </script>
 </body>
 </html>

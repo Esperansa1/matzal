@@ -1,9 +1,10 @@
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, make_response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from markupsafe import escape
 import json
+import hashlib
 
 app = Flask(__name__)
 
@@ -20,34 +21,49 @@ limiter = Limiter(
 
 inputted_names = {name: 'נוכח' for name in all_names}
 
+correct_username = 'omega'
+correct_password_hash = '70ccd9007338d6d81dd3b6271621b9cf9a97ea00'
+
+def sha1(input_string):
+    return hashlib.sha1(input_string.encode()).hexdigest()
+
 @app.route('/')
 @limiter.limit("49 per minute")
 def login():
+    if request.cookies.get('logged_in') == 'true':
+        return redirect(url_for('index'))
     return render_template('login.html')
-
-@app.route('/index')
-@limiter.limit("49 per minute")
-def index():
-    present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
-    return render_template(
-        'index.html',
-        names=inputted_names,
-        present_count=present_count,
-        removed_count=len(inputted_names) - present_count,
-        all_names=all_names  
-    )
 
 @app.route('/login', methods=['POST'])
 @limiter.limit("49 per minute")
 def login_action():
     username = request.form.get('username').lower()
     password = request.form.get('password')
-    hashed_password = sha1(password)  # assuming sha1 function is defined
-    if username == 'omega' and hashed_password == 'a5beecb706dcad5c218f5082fea48530e6f91820':
-        return redirect(url_for('index'))
+    hashed_password = sha1(password)
+    if username == correct_username and hashed_password == correct_password_hash:
+        response = make_response(redirect(url_for('index')))
+        response.set_cookie('logged_in', 'true', max_age=30*24*60*60, path='/')
+        return response
     else:
         flash('Incorrect username or password!', 'danger')
         return redirect(url_for('login'))
+
+@app.route('/index')
+@limiter.limit("49 per minute")
+def index():
+    cookie_value = request.cookies.get('logged_in')
+
+    if cookie_value != 'true':
+        return redirect(url_for('login'))
+    
+    present_count = sum(1 for status in inputted_names.values() if status == 'נוכח')
+    return render_template(
+        'index.html',
+        names=inputted_names,
+        present_count=present_count,
+        removed_count=len(inputted_names) - present_count,
+        all_names=all_names
+    )
 
 @app.route('/update', methods=['POST'])
 @limiter.limit("49 per minute")
@@ -139,30 +155,12 @@ def get_status_card():
     }
     return status_card
 
-def convert_status_card_to_string(status_card):
-    date_today = status_card['date_today']
-    current_time = status_card['current_time']
-    course_status = status_card['course_status']
-    present_count = course_status['present_count']
-    bathroom = f"שירותים: {', '.join(course_status['bathroom'])}" if course_status['bathroom'] else ''
-    break_time = f"בהפסקה: {', '.join(course_status['break_time'])}" if course_status['break_time'] else ''
-    technical_issue = f"תקלה טכנית: {', '.join(course_status['technical_issue'])}" if course_status['technical_issue'] else ''
-    other = f"אחר: {', '.join(course_status['other'])}" if course_status['other'] else ''
-
-    status_string = (
-        f"תאריך של היום: {date_today}\n"
-        f"שעה נוכחית: {current_time}\n"
-        f"מצב קורס סיגינט\n"
-        f"מצב כולל: {course_status['total_count']}\n"
-        f"נוכחים: {present_count}\n"
-        f"חסרים: {course_status['missing_count']}\n"
-        f"{bathroom}\n"
-        f"{break_time}\n"
-        f"{technical_issue}\n"
-        f"{other}"
-    )
-
-    return status_string
+@app.route('/logout')
+def logout():
+    response = make_response(redirect(url_for('login')))
+    response.set_cookie('logged_in', '', expires=0)
+    flash('You have been logged out.', 'success')
+    return response
 
 if __name__ == '__main__':
     app.run()
