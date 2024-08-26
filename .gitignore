@@ -11,3 +11,4 @@
 # Built Visual Studio Code Extensions
 *.vsix
 __pycache__/*
+inputted_names.json
