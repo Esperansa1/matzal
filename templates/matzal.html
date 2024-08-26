@@ -14,18 +14,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-dark bg-primary d-flex align-items-center">
-        <a class="navbar-brand d-flex align-items-center" href="https://www.youtube.com/watch?v=xvFZjo5PgG0">
-            <img src="/static/favicon.ico" width="45" height="45" alt="" class="mx-2">
-            <label class="navbar-label">סיגיט מצ"ל</label>
-        </a>
-        <div class="mx-3">
-            <button id="theme-toggle" class="btn btn-light matzal-btn">
-                <i id="theme-icon" class="fas fa-moon"></i>
-            </button>
-            <a href="{{ url_for('index') }}" class="btn btn-light matzal-btn">עמוד הבית</a>
-        </div>
-    </nav>
+    {% include 'nav.html' %}
 
     <div class="card">
         <button class="clipboard_btn btn btn-outline-primary" onclick="copy_to_clipboard()">העתק</button>
