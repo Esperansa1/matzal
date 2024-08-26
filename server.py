@@ -5,10 +5,16 @@ from flask_limiter.util import get_remote_address
 from markupsafe import escape
 import json
 from fileDict import fileDict
+from pathlib import Path
 
 app = Flask(__name__)
 
-datafile = json.load(open('data.json', 'r', encoding='utf-8'))
+THIS_FOLDER = Path(__file__).parent.resolve()
+data_file = f"{THIS_FOLDER}/data.json"
+
+with open(data_file, 'r', encoding='utf-8') as f:
+    datafile = json.load(f)
+
 all_names = datafile['names']
 app.config['SECRET_KEY'] = datafile['password']
 
@@ -30,7 +36,9 @@ def index():
         names=inputted_names,
         present_count=present_count,
         removed_count=len(inputted_names) - present_count,
-        all_names=all_names  
+        all_names=all_names,
+        nav_button_link = "/matzal",
+        nav_button_text = 'הצג מצ"ל נוכחי'
     )
 
 @app.route('/update', methods=['POST'])
@@ -96,7 +104,7 @@ def get_matzal_updates():
 @limiter.limit("49 per minute")
 def matzal():
     status_card = get_status_card()
-    return render_template('matzal.html', status_card=status_card)
+    return render_template('matzal.html', status_card=status_card, nav_button_link = "/", nav_button_text = 'עמוד הבית')
 
 def get_status_card():
     date_today = datetime.now().strftime('%Y-%m-%d')
