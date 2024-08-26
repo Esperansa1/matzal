@@ -1,5 +1,11 @@
 import json
 
+"""
+This class is supposed to act as a dictionary
+    that when updated, also updates a file associated with it.
+Essenically a wrapper for a dictionary.
+This implementation of saving the statuses was chosen for minimal refactoring.
+"""
 class FileDict:
     def updatefile(self):
         with open(self.filename, 'w', encoding='utf8') as f:
