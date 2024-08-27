@@ -11,7 +11,7 @@ class FileDict:
     def updatefile(self):
         THIS_FOLDER = Path(__file__).parent.resolve()
         data_file = f"{THIS_FOLDER}/{self.filename}"
-        with open(self.filename, 'w', encoding='utf8') as f:
+        with open(data_file, 'w', encoding='utf8') as f:
             json.dump(self.dic, f, ensure_ascii=False)
 
     def __init__(self, initdict, filename = 'json/inputted_names.json', attempt_load=False):
