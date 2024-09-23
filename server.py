@@ -157,4 +157,4 @@ def convert_status_card_to_string(status_card):
     return status_string
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host="0.0.0.0")
