@@ -14,5 +14,9 @@ __pycache__/*
 
 # changes in name
 ./json/inputted_names.json
+<<<<<<< HEAD
+.env
+=======
 
 .env
+>>>>>>> d0607afcd58ded11c3b4bed1a5ed0e0aff2bd5f0

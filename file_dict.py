@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 """
 This class is supposed to act as a dictionary
@@ -8,13 +9,17 @@ This implementation of saving the statuses was chosen for minimal refactoring.
 """
 class FileDict:
     def updatefile(self):
-        with open(self.filename, 'w', encoding='utf8') as f:
+        THIS_FOLDER = Path(__file__).parent.resolve()
+        data_file = f"{THIS_FOLDER}/{self.filename}"
+        with open(data_file, 'w', encoding='utf8') as f:
             json.dump(self.dic, f, ensure_ascii=False)
 
     def __init__(self, initdict, filename = 'json/inputted_names.json', attempt_load=False):
         if attempt_load:
-            try:
-                with open(filename, 'r', encoding='utf8') as f:
+            try:          
+                THIS_FOLDER = Path(__file__).parent.resolve()
+                data_file = f"{THIS_FOLDER}/{filename}"
+                with open(data_file, 'r', encoding='utf8') as f:
                     self.dic = json.load(f)
             except Exception as ex:
                 print('Something wrong went with loading inputted_names:', ex)
